@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+
+  <!-- We resume the logic in empty_world.launch, changing the name of the world to be launched -->
+  <include file="$(find birl_baxter_description)/launch/pa_box/pa_box_gazebo.launch"/>
+
+  <!-- Start the Baxter pick and place demo -->
+  <node pkg="birl_sim_examples" type="pa_box.py" name="pa_box" />
+
+</launch>
