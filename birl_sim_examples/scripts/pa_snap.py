@@ -260,28 +260,29 @@ def main():
                              z=0.00737916180073,
                              w=0.00486450832011)
     object_orientation = Quaternion(
-                             x=-0.0249590815779,
-                             y=0.999649402929,
-                             z=0.00737916180073,
-                             w=0.00000000000003)
+                             x=0.0,
+                             y=0.0,
+                             z=0.0,
+                             w=1.0)
     block_poses = list()
     # The Pose of the block in its initial location.
     # You may wish to replace these poses with estimates
     # from a perception node
     object_pose = Pose()
         
-    object_pose.position.x = 0.6 - (0.6037 - 0.59869)
-    object_pose.position.y = 0 - (0.397 - 0.39748)
-    object_pose.position.z = -0.115 - (0.0011948 +0.070545)
+    object_pose.position.x = 0.6
+    object_pose.position.y = 0 
+    object_pose.position.z = -0.115
  
     block_poses.append(Pose(
-        position=Point(x=object_pose.position.x+0.0006, y=object_pose.position.y, z=object_pose.position.z-0.005),
+        position=Point(x=object_pose.position.x, y=object_pose.position.y, z=object_pose.position.z),
         orientation=object_orientation))
     # Feel free to add additional desired poses for the object.
     # Each additional pose will get its own pick and place.
     block_poses.append(Pose(
-        position=Point(x=0.6, y=0.4, z=-0.186),
-        orientation=overhead_orientation))
+        position=Point(x=object_pose.position.x, y=object_pose.position.y+0.4, z=object_pose.position.z),
+        orientation=object_orientation))
+    
     # Move to the desired starting angles
     pnp.move_to_start(starting_joint_angles)
     idx = 0

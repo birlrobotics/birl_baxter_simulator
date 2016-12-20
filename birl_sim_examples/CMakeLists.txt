@@ -22,6 +22,7 @@ catkin_package(
   baxter_tools
   gazebo_ros
   gazebo_msgs
+  baxter_sim_kinematics
 )
 
 

@@ -111,22 +111,27 @@ class PickAndPlace(object):
         approach.position.z = approach.position.z + self._hover_distance
         joint_angles = self.ik_request(approach)
         self._guarded_move_to_joint_position(joint_angles)
-
-        approach.position.z = approach.position.z - 0.05
-        joint_angles = self.ik_request(approach)
-        self._guarded_move_to_joint_position(joint_angles)
+        rospy.sleep(1)
         
         approach.position.z = approach.position.z - 0.05
         joint_angles = self.ik_request(approach)
         self._guarded_move_to_joint_position(joint_angles)
-
+        rospy.sleep(1)
+        
+        approach.position.z = approach.position.z - 0.05
+        joint_angles = self.ik_request(approach)
+        self._guarded_move_to_joint_position(joint_angles)
+        rospy.sleep(1)
+        
         approach.position.z = approach.position.z - 0.03
         joint_angles = self.ik_request(approach)
         self._guarded_move_to_joint_position(joint_angles)
-
+        rospy.sleep(1)
+        
         approach.position.z = approach.position.z - 0.01
         joint_angles = self.ik_request(approach)
         self._guarded_move_to_joint_position(joint_angles)
+        rospy.sleep(1)
         
     def _retract(self):
         # retrieve current pose from endpoint
@@ -157,6 +162,7 @@ class PickAndPlace(object):
         self._servo_to_pose(pose)
         # close gripper
         #self.gripper_close()
+        rospy.sleep(3)
         # retract to clear object
         self._retract()
 
@@ -168,6 +174,7 @@ class PickAndPlace(object):
         # open the gripper
        # self.gripper_open()
         # retract to clear object
+        rospy.sleep(3)
         self._retract()
 
 def load_gazebo_models(table_pose=Pose(position=Point(x=1.0, y=0.0, z=0.0)),
@@ -212,6 +219,7 @@ def delete_gazebo_models():
         resp_delete = delete_model("block")
     except rospy.ServiceException, e:
         rospy.loginfo("Delete Model service call failed: {0}".format(e))
+
 
 def main():
     """RSDK Inverse Kinematics Pick and Place Example
@@ -261,28 +269,30 @@ def main():
 
     #object position with a tranform offset between gripper and male part.
     object_pose = Pose()
-        
-    object_pose.position.x = 0.6 - (0.6037 - 0.59869)
-    object_pose.position.y = 0 - (0.397 - 0.39748)
-    object_pose.position.z = -0.115 - (0.0011948 +0.070545)
 
+    #the position of female box
+    object_pose.position.x = 0.6 
+    object_pose.position.y = 0 
+    object_pose.position.z = -0.115 
+
+    #RPY = 0 pi 0
     object_orientation = Quaternion(
-            x=-0.0249590815779,
-            y=0.999649402929,
-            z=0.00737916180073,
-            w=0.00000000000003)
+            x=0.0,
+            y=1.0,
+            z=0.0,
+            w=6.123233995736766e-17)
     
     # The Pose of the block in its initial location.
     # You may wish to replace these poses with estimates
     # from a perception node.
     block_poses.append(Pose(
-        position=Point(x=object_pose.position.x+0.0006, y=object_pose.position.y, z=object_pose.position.z-0.005),
+        position=Point(x=object_pose.position.x, y=object_pose.position.y, z=object_pose.position.z),
         orientation=object_orientation))
     
     # Feel free to add additional desired poses for the object.
     # Each additional pose will get its own pick and place.
     block_poses.append(Pose(
-        position=Point(x=0.6, y=0.4, z=-0.183),
+        position=Point(x=0.6, y=0.4, z=-0.115),
         orientation=overhead_orientation))
     # Move to the desired starting angles
     pnp.move_to_start(starting_joint_angles)
