@@ -44,24 +44,35 @@ catkin_make
 finish  installing, enjoy!
 
 # Launch examples
-For the box assembly task with baxter
+task1: place the male box to female box
 ````
-roslaunch birl_sim_examples pa_box_gazebo.launch
-````
-or 
-````
-roslaunch birl_baxter_description pa_box_gazebo.launch
-roslaunch birl_sim_examples pa_box.py
+roslaunch birl_sim_examples place_box.launch
 ````
 
-For the snap assembly task with baxter
+task2: place the male snap to female snap
 ````
-roslaunch birl_sim_examples pa_snap_gazebo.launch
+roslaunch birl_sim_examples place_snap.launch
 ````
-or 
+
+task3: pick and place the female box
 ````
-roslaunch birl_baxter_description pa_snap_gazebo.launch
-roslaunch birl_sim_examples pa_box.py
+roslaunch birl_sim_examples pick_n_place_box.launch
+````
+
+
+for the environment raw launch files, you can find the launches files here:
+````
+roscd birl_baxter_description/launch
+````
+
+for the manipulation examples file, you can find here
+````
+roscd birl_sim_examples/scripts
+````
+
+for the urdf file, you can find here
+````
+roscd birl_baxter_description/urdf
 ````
 
 # Mechanical design source
