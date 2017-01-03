@@ -44,21 +44,24 @@ catkin_make
 finish  installing, enjoy!
 
 # Launch examples
-task1: place the male box to female box
+Task1: place the male box to female box
 ````
 roslaunch birl_sim_examples place_box.launch
 ````
 
-task2: place the male snap to female snap
+Task2: place the male snap to female snap
 ````
 roslaunch birl_sim_examples place_snap.launch
 ````
 
-task3: pick and place the female box
+Task3: pick and place the female box
 ````
 roslaunch birl_sim_examples pick_n_place_box.launch
 ````
 
+
+
+If you want to look into the raw files, you can find the files blow:
 
 for the environment raw launch files, you can find the launches files here:
 ````
@@ -74,6 +77,7 @@ for the urdf file, you can find here
 ````
 roscd birl_baxter_description/urdf
 ````
+
 
 # Mechanical design source
 Here are the repo which contain our mechanical design source[birl_baxter_hands](https://github.com/birlrobotics/birl_baxter_hands)
