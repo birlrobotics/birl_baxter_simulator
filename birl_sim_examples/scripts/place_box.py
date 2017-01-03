@@ -111,22 +111,27 @@ class PickAndPlace(object):
         approach.position.z = approach.position.z + self._hover_distance
         joint_angles = self.ik_request(approach)
         self._guarded_move_to_joint_position(joint_angles)
-
-        approach.position.z = approach.position.z - 0.05
-        joint_angles = self.ik_request(approach)
-        self._guarded_move_to_joint_position(joint_angles)
+        rospy.sleep(1)
         
         approach.position.z = approach.position.z - 0.05
         joint_angles = self.ik_request(approach)
         self._guarded_move_to_joint_position(joint_angles)
-
+        rospy.sleep(1)
+        
+        approach.position.z = approach.position.z - 0.05
+        joint_angles = self.ik_request(approach)
+        self._guarded_move_to_joint_position(joint_angles)
+        rospy.sleep(1)
+        
         approach.position.z = approach.position.z - 0.03
         joint_angles = self.ik_request(approach)
         self._guarded_move_to_joint_position(joint_angles)
-
+        rospy.sleep(1)
+        
         approach.position.z = approach.position.z - 0.01
         joint_angles = self.ik_request(approach)
         self._guarded_move_to_joint_position(joint_angles)
+        rospy.sleep(1)
         
     def _retract(self):
         # retrieve current pose from endpoint
@@ -155,11 +160,9 @@ class PickAndPlace(object):
         self._approach(pose)
         # servo to pose
         self._servo_to_pose(pose)
-
-        rospy.sleep(3)
-        
         # close gripper
         #self.gripper_close()
+        rospy.sleep(3)
         # retract to clear object
         self._retract()
 
@@ -171,6 +174,7 @@ class PickAndPlace(object):
         # open the gripper
        # self.gripper_open()
         # retract to clear object
+        rospy.sleep(3)
         self._retract()
 
 def load_gazebo_models(table_pose=Pose(position=Point(x=1.0, y=0.0, z=0.0)),
@@ -216,6 +220,7 @@ def delete_gazebo_models():
     except rospy.ServiceException, e:
         rospy.loginfo("Delete Model service call failed: {0}".format(e))
 
+
 def main():
     """RSDK Inverse Kinematics Pick and Place Example
 
@@ -231,7 +236,7 @@ def main():
     the loop.
     """
     #ipdb.set_trace()
-    rospy.init_node("pa_snap")
+    rospy.init_node("pa_box")
     # Load Gazebo Models via Spawning Services
     # Note that the models reference is the /world frame
     # and the IK operates with respect to the /base frame
@@ -242,16 +247,16 @@ def main():
     # Wait for the All Clear from emulator startup
     rospy.wait_for_message("/robot/sim/started", Empty)
 
-    limb = 'left'
+    limb = 'right'
     hover_distance = 0.15 # meters
     # Starting Joint angles for right arm
-    starting_joint_angles = {'left_w0': 0.6699952259595108,
-                             'left_w1': 1.030009435085784,
-                             'left_w2': -0.4999997247485215,
-                             'left_e0': .189968899785275,
-                             'left_e1': 1.9400238130755056,
-                             'left_s0': -0.08000397926829805,
-                             'left_s1': -0.9999781166910306}
+    starting_joint_angles = {'right_w0': -0.6699952259595108,
+                             'right_w1': 1.030009435085784,
+                             'right_w2': 0.4999997247485215,
+                             'right_e0': -0.189968899785275,
+                             'right_e1': 1.9400238130755056,
+                             'right_s0': 0.08000397926829805,
+                             'right_s1': -0.9999781166910306}
     pnp = PickAndPlace(limb, hover_distance)
     # An orientation for gripper fingers to be overhead and parallel to the obj
     overhead_orientation = Quaternion(
@@ -259,30 +264,36 @@ def main():
                              y=0.999649402929,
                              z=0.00737916180073,
                              w=0.00486450832011)
-    object_orientation = Quaternion(
-                             x=0.0,
-                             y=0.0,
-                             z=0.0,
-                             w=1.0)
+    
     block_poses = list()
+
+    #object position with a tranform offset between gripper and male part.
+    object_pose = Pose()
+
+    #the position of female box
+    object_pose.position.x = 0.6 
+    object_pose.position.y = 0 
+    object_pose.position.z = -0.115 
+
+    #RPY = 0 pi 0
+    object_orientation = Quaternion(
+            x=0.0,
+            y=1.0,
+            z=0.0,
+            w=6.123233995736766e-17)
+    
     # The Pose of the block in its initial location.
     # You may wish to replace these poses with estimates
-    # from a perception node
-    object_pose = Pose()
-        
-    object_pose.position.x = 0.6
-    object_pose.position.y = 0 
-    object_pose.position.z = -0.115
- 
+    # from a perception node.
     block_poses.append(Pose(
         position=Point(x=object_pose.position.x, y=object_pose.position.y, z=object_pose.position.z),
         orientation=object_orientation))
+    
     # Feel free to add additional desired poses for the object.
     # Each additional pose will get its own pick and place.
     block_poses.append(Pose(
-        position=Point(x=object_pose.position.x, y=object_pose.position.y+0.4, z=object_pose.position.z),
-        orientation=object_orientation))
-    
+        position=Point(x=0.6, y=0.4, z=-0.115),
+        orientation=overhead_orientation))
     # Move to the desired starting angles
     pnp.move_to_start(starting_joint_angles)
     idx = 0

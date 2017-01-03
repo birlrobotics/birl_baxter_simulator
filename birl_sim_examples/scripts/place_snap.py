@@ -111,27 +111,22 @@ class PickAndPlace(object):
         approach.position.z = approach.position.z + self._hover_distance
         joint_angles = self.ik_request(approach)
         self._guarded_move_to_joint_position(joint_angles)
-        rospy.sleep(0.5)
+
+        approach.position.z = approach.position.z - 0.05
+        joint_angles = self.ik_request(approach)
+        self._guarded_move_to_joint_position(joint_angles)
         
         approach.position.z = approach.position.z - 0.05
         joint_angles = self.ik_request(approach)
         self._guarded_move_to_joint_position(joint_angles)
-        rospy.sleep(0.5)
-        
-        approach.position.z = approach.position.z - 0.05
-        joint_angles = self.ik_request(approach)
-        self._guarded_move_to_joint_position(joint_angles)
-        rospy.sleep(0.5)
-        
+
         approach.position.z = approach.position.z - 0.03
         joint_angles = self.ik_request(approach)
         self._guarded_move_to_joint_position(joint_angles)
-        rospy.sleep(0.5)
-        
+
         approach.position.z = approach.position.z - 0.01
         joint_angles = self.ik_request(approach)
         self._guarded_move_to_joint_position(joint_angles)
-        rospy.sleep(0.5)
         
     def _retract(self):
         # retrieve current pose from endpoint
@@ -160,9 +155,11 @@ class PickAndPlace(object):
         self._approach(pose)
         # servo to pose
         self._servo_to_pose(pose)
+
+        rospy.sleep(3)
+        
         # close gripper
-        self.gripper_close()
-        rospy.sleep(1)
+        #self.gripper_close()
         # retract to clear object
         self._retract()
 
@@ -172,44 +169,41 @@ class PickAndPlace(object):
         # servo to pose
         self._servo_to_pose(pose)
         # open the gripper
-        self.gripper_open()
+       # self.gripper_open()
         # retract to clear object
-        rospy.sleep(1)
         self._retract()
 
-def load_gazebo_models(box_male_pose=Pose(position=Point(x=0.6, y=0, z=-0.115),
-                                          orientation=Quaternion(x=0,y=0,z=0,w=1)),
-                       box_male_reference_frame="base",
-                       box_female_pose=Pose(position=Point(x=0.6, y=0.4, z=-0.115),
-                                          orientation=Quaternion(x=0,y=0,z=0,w=1)),
-                       box_female_reference_frame="base"):
+def load_gazebo_models(table_pose=Pose(position=Point(x=1.0, y=0.0, z=0.0)),
+                       table_reference_frame="world",
+                       block_pose=Pose(position=Point(x=0.6725, y=0.1265, z=0.7825)),
+                       block_reference_frame="world"):
     # Get Models' Path
-    model_path = rospkg.RosPack().get_path('birl_baxter_description')+"/urdf/box/"
-    # Load male box SDF
+    model_path = rospkg.RosPack().get_path('baxter_sim_examples')+"/models/"
+    # Load Table SDF
     table_xml = ''
-    with open (model_path + "box_male/robots/box_male.URDF", "r") as box_male_file:
-        box_male_xml=box_male_file.read().replace('\n', '')
-    # Load female box  URDF
+    with open (model_path + "cafe_table/model.sdf", "r") as table_file:
+        table_xml=table_file.read().replace('\n', '')
+    # Load Block URDF
     block_xml = ''
-    with open (model_path + "box_female/robots/box_female.URDF", "r") as box_female_file:
-        box_female_xml=box_female_file.read().replace('\n', '')
-    # Spawn male and female box
+    with open (model_path + "block/model.urdf", "r") as block_file:
+        block_xml=block_file.read().replace('\n', '')
+    # Spawn Table SDF
+    rospy.wait_for_service('/gazebo/spawn_sdf_model')
+    try:
+        spawn_sdf = rospy.ServiceProxy('/gazebo/spawn_sdf_model', SpawnModel)
+        resp_sdf = spawn_sdf("cafe_table", table_xml, "/",
+                             table_pose, table_reference_frame)
+    except rospy.ServiceException, e:
+        rospy.logerr("Spawn SDF service call failed: {0}".format(e))
+    # Spawn Block URDF
     rospy.wait_for_service('/gazebo/spawn_urdf_model')
     try:
         spawn_urdf = rospy.ServiceProxy('/gazebo/spawn_urdf_model', SpawnModel)
-        resp_urdf = spawn_urdf("box_male", box_male_xml, "/",
-                               box_male_pose, box_male_reference_frame)        
+        resp_urdf = spawn_urdf("block", block_xml, "/",
+                               block_pose, block_reference_frame)
     except rospy.ServiceException, e:
         rospy.logerr("Spawn URDF service call failed: {0}".format(e))
-        
-    rospy.wait_for_service('/gazebo/spawn_urdf_model')    
-    try:
-        spawn_urdf2 = rospy.ServiceProxy('/gazebo/spawn_urdf_model', SpawnModel)
-        resp_urdf2 = spawn_urdf("box_female", box_female_xml, "/",
-                                box_female_pose, box_female_reference_frame)        
-    except rospy.ServiceException, e:
-        rospy.logerr("Spawn URDF service call failed: {0}".format(e))
-        
+
 def delete_gazebo_models():
     # This will be called on ROS Exit, deleting Gazebo models
     # Do not wait for the Gazebo Delete Model service, since
@@ -217,11 +211,10 @@ def delete_gazebo_models():
     # available since Gazebo has been killed, it is fine to error out
     try:
         delete_model = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
-        resp_delete = delete_model("box_male")
-        resp_delete = delete_model("box_female")
+        resp_delete = delete_model("cafe_table")
+        resp_delete = delete_model("block")
     except rospy.ServiceException, e:
         rospy.loginfo("Delete Model service call failed: {0}".format(e))
-
 
 def main():
     """RSDK Inverse Kinematics Pick and Place Example
@@ -237,28 +230,28 @@ def main():
     can improve on this demo by adding perception and feedback to close
     the loop.
     """
-    ipdb.set_trace()
-    rospy.init_node("pa_box")
+    #ipdb.set_trace()
+    rospy.init_node("pa_snap")
     # Load Gazebo Models via Spawning Services
     # Note that the models reference is the /world frame
     # and the IK operates with respect to the /base frame
-    load_gazebo_models()
+   # load_gazebo_models()
     # Remove models from the scene on shutdown
    # rospy.on_shutdown(delete_gazebo_models)
 
     # Wait for the All Clear from emulator startup
     rospy.wait_for_message("/robot/sim/started", Empty)
 
-    limb = 'left'
+    limb = 'right'
     hover_distance = 0.15 # meters
     # Starting Joint angles for right arm
-    starting_joint_angles = {'left_w0': 0.6699952259595108,
-                             'left_w1': 1.030009435085784,
-                             'left_w2': -0.4999997247485215,
-                             'left_e0': .189968899785275,
-                             'left_e1': 1.9400238130755056,
-                             'left_s0': -0.08000397926829805,
-                             'left_s1': -0.9999781166910306}
+    starting_joint_angles = {'right_w0': -0.6699952259595108,
+                             'right_w1': 1.030009435085784,
+                             'right_w2': 0.4999997247485215,
+                             'right_e0': -0.189968899785275,
+                             'right_e1': 1.9400238130755056,
+                             'right_s0': 0.08000397926829805,
+                             'right_s1': -0.9999781166910306}
     pnp = PickAndPlace(limb, hover_distance)
     # An orientation for gripper fingers to be overhead and parallel to the obj
     overhead_orientation = Quaternion(
@@ -266,36 +259,30 @@ def main():
                              y=0.999649402929,
                              z=0.00737916180073,
                              w=0.00486450832011)
-    
-    block_poses = list()
-
-    #object position with a tranform offset between gripper and male part.
-    object_pose = Pose()
-
-    #the position of female box
-    object_pose.position.x = 0.6 
-    object_pose.position.y = 0 
-    object_pose.position.z = -0.115 - 0.005
-
-    #RPY = 0 pi 0
     object_orientation = Quaternion(
-            x=0.0,
-            y=1.0,
-            z=0.0,
-            w=6.123233995736766e-17)
-    
+                             x=0.0,
+                             y=0.0,
+                             z=0.0,
+                             w=1.0)
+    block_poses = list()
     # The Pose of the block in its initial location.
     # You may wish to replace these poses with estimates
-    # from a perception node.
+    # from a perception node
+    object_pose = Pose()
+        
+    object_pose.position.x = 0.6
+    object_pose.position.y = 0 
+    object_pose.position.z = -0.115
+ 
     block_poses.append(Pose(
         position=Point(x=object_pose.position.x, y=object_pose.position.y, z=object_pose.position.z),
         orientation=object_orientation))
-    
     # Feel free to add additional desired poses for the object.
     # Each additional pose will get its own pick and place.
     block_poses.append(Pose(
-        position=Point(x=0.6, y=-0.2, z=-0.115-0.005),
+        position=Point(x=object_pose.position.x, y=object_pose.position.y+0.4, z=object_pose.position.z),
         orientation=object_orientation))
+    
     # Move to the desired starting angles
     pnp.move_to_start(starting_joint_angles)
     idx = 0

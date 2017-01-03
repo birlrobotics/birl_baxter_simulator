@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+
+  <!-- We resume the logic in empty_world.launch, changing the name of the world to be launched -->
+  <include file="$(find birl_baxter_description)/launch/pa_snap/place_snap_gazebo.launch"/>
+
+  <!-- Start the Baxter pick and place demo -->
+  <node pkg="birl_sim_examples" type="place_snap.py" name="place_snap" />
+  
+  <param name="right_tip_name" value="snap_male" />
+  <param name="left_tip_name" value="left_gripper" />
+</launch>
