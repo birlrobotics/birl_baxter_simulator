@@ -31,9 +31,9 @@ catkin_package(
 #############
 
 catkin_install_python(PROGRAMS
-  scripts/pa_box.py
-  scripts/pa_snap.py
-  scripts/pa_box2.py
+  scripts/pick_n_place_box.py
+  scripts/place_box.py
+  scripts/place_snap.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
