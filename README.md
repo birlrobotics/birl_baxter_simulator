@@ -1,86 +1,96 @@
 # birl_baxter_simulator
 
 # Purpose
-This package is used for applying Baxter robot from rethink robotics inc to experiments of our lab,BIRL.
-The package is of the extension from baxter_common,a package from baxter sdk.
+This package is used for applying Baxter from rethink robotics inc in experiments of our lab, [BIRL](https://github.com/birlrobotics/birl_baxter/wiki).
+It is an the extension from [baxter_simulator](https://github.com/RethinkRobotics/baxter_simulator), a package from the baxter sdk.
 
-# New Feature
+# New Features
 
-![baxter](https://github.com/birlrobotics/birl_baxter_common/blob/master/media/baxter.png)
+![baxter](https://github.com/birlrobotics/birl_baxter_common/blob/master/media/full.png)
 
-The environment for BIRL includes as followed:
+The environment for BIRL experiments includes as follows:
   1.  Asus xtion camera sensor and camera frame
-  2. Table
-  3. Force torque sensor and its design
-  4. camera gripper and holder designed for camera snap assembly task
-  5. some object model for task
+  2.  Table
+  3.  WACOH force torque sensor and its design
+  4.  A in house designed plastic camera gripper holder used for a camera snap assembly task
+  5.  A few other object models for the tasks
 
-For more detail, you can click [New Feature documentation](https://github.com/birlrobotics/birl_baxter_common/wiki/New-Features-documentation)
+A number of tasks that we currently offer:
+ 1. A pick and place box.
+ 2. A one-arm box assembly
+ 3. A one-arm snap assembly using a plastic camera mold with male and female parts. 
 
-# Dependence
-This package depend on baxter_common,baxter_simulator.So you must install [baxter_sdk](http://sdk.rethinkrobotics.com/wiki/Workstation_Setup) and [baxter_simulator](http://sdk.rethinkrobotics.com/wiki/Simulator_Installation).make sure you instatll baxter_sdk and baxter_simulator properly.
+For more details, you can click: [New Feature documentation](https://github.com/birlrobotics/birl_baxter_common/wiki/New-Features-documentation)
+
+# Dependencies
+This package depends on baxter_common and baxter_simulator. So you must install the [baxter_sdk](http://sdk.rethinkrobotics.com/wiki/Workstation_Setup) and [baxter_simulator](http://sdk.rethinkrobotics.com/wiki/Simulator_Installation).
 
 # Installation
-1.First of all you should install 
-- [baxter_sdk](http://sdk.rethinkrobotics.com/wiki/Workstation_Setup) 
-- [baxter_simulator](http://sdk.rethinkrobotics.com/wiki/Simulator_Installation).
+1. Install **baxter_sdk** and **baxter_simulator**
 
-  Please follow the installation wiki on rethink robotics official website  
+   - [baxter_sdk](http://sdk.rethinkrobotics.com/wiki/Workstation_Setup) 
 
-  you can try this to check if your baxter gazebo environment is setup well
-````
-roslaunch baxter_gazebo baxter_launch 
-```` 
+   - [baxter_simulator](http://sdk.rethinkrobotics.com/wiki/Simulator_Installation).
+
+  Please follow the installation of **baxter_sdk** and **baxter_simulator** on the Rethink Robotics official website.  
+
+  You can check it after installation to find if you installed properly by a simple command: 
+#
+    roslaunch baxter_gazebo baxter_world.launch 
+
  
-2.Install the repo birl_baxter_common and birl_baxter_simulator
+2. Install the **birl_baxter_common** and **birl_baxter_simulator** repositories:
 ````
-cd {your_baxter_work_space}/src 
-  (got to your baxter_ws,in my case, cd ~/ros/indigo/baxter_ws/src)
+$ cd {your_baxter_work_space}/src // in my case ~/ros/indigo/baxter_ws/src
 git clone https://github.com/birlrobotics/birl_baxter_common.git
 git clone https://github.com/birlrobotics/birl_baxter_simulator.git
 cd ..
 catkin_make
 ````
-finish  installing, enjoy!
+ And finished! Enjoy it.
 
-# Launch examples
-Task1: place the male box to female box
+# Launch Examples
+**Task1**: A one-arm box assembly
+    
+**[Description]**: Try to assembly the male box on the female box with one arm.
 ````
 roslaunch birl_sim_examples place_box.launch
 ````
 
-Task2: place the male snap to female snap
+**Task2:** A one-arm snap assembly using a plastic camera mold with male and female parts
+
+**[Description]:** Try to assembly the male snap on the female snap using a plastic camera mold with one arm
 ````
 roslaunch birl_sim_examples place_snap.launch
 ````
 
-Task3: pick and place the female box
+**Task3:** Pick and place the box
+
+**[Description]:** Pick and place the box on the table with two goals.
 ````
 roslaunch birl_sim_examples pick_n_place_box.launch
 ````
 
-
-
+# Learn More
 If you want to look into the raw files, you can find the files blow:
 
-for the environment raw launch files, you can find the launches files here:
+Environment raw **launch** files, you can find the launches files here:
 ````
 roscd birl_baxter_description/launch
 ````
 
-for the manipulation examples file, you can find here
+Manipulation **examples** file, you can find here:
 ````
 roscd birl_sim_examples/scripts
 ````
 
-for the urdf file, you can find here
+**URDF** file, you can find here
 ````
 roscd birl_baxter_description/urdf
 ````
 
+# Mechanical Design Source
+To access the repo with the hardware design of the FT sensor, grippers, and objects, see: [birl_baxter_hands](https://github.com/birlrobotics/birl_baxter_hands)
 
-# Mechanical design source
-Here are the repo which contain our mechanical design source[birl_baxter_hands](https://github.com/birlrobotics/birl_baxter_hands)
-
-# Learn more about BIRL
-Welcome to [BIRL](https://github.com/birlrobotics/birl_baxter/wiki)
+# Learn More About BIRL
+Our central baxter repository has more information about a variety of packages that we support: [BIRL Baxter](https://github.com/birlrobotics/birl_baxter/wiki)
