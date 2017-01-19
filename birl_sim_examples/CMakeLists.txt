@@ -10,6 +10,24 @@ find_package(catkin REQUIRED COMPONENTS
   baxter_tools
   gazebo_ros
   gazebo_msgs
+  message_generation
+  roscpp
+  std_msgs
+  geometry_msgs
+  )
+
+# Generate services in the 'srv' folder
+add_service_files(
+  FILES Add_Gazebo_Model.srv
+  Go_To_Start_Position.srv
+  Go_To_Position.srv)
+
+catkin_python_setup()
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  geometry_msgs
 )
 
 catkin_package(
@@ -23,17 +41,13 @@ catkin_package(
   gazebo_ros
   gazebo_msgs
   baxter_sim_kinematics
-)
-
+  )
 
 #############
 ## Install ##
 #############
 
-catkin_install_python(PROGRAMS
-  scripts/pick_n_place_box.py
-  scripts/place_box.py
-  scripts/place_snap.py
+install(DIRECTORY scripts/
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

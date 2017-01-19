@@ -1,0 +1,10 @@
+# go to desired position
+geometry_msgs/Pose pose
+
+---
+
+# IK service result
+std_msgs/Bool ik_flag
+
+# action result flag
+std_msgs/Bool action_flag

@@ -1,0 +1,13 @@
+# name of model box_female/box_male
+std_msgs/String model_name
+
+# Pose of the model
+geometry_msgs/Pose model_pose
+
+# reference frame
+std_msgs/String model_reference_frame
+
+---
+
+# status of loading
+std_msgs/Bool load_status

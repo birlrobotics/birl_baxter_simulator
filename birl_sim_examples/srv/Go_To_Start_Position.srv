@@ -1,0 +1,7 @@
+# Start Flag
+std_msgs/Bool start
+
+---
+
+# finish Flag
+std_msgs/Bool finish
