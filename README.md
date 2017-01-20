@@ -73,6 +73,7 @@ roslaunch birl_sim_examples pick_n_place_box.launch
 ````
 =======================================================================================
 **Task4:** pick and place smach servie scripts
+
 **[Description]**: using state machine to achieve pick and place box task
 ````
 roslaunch birl_sim_examples pick_n_place_box_smach_service.launch
@@ -86,6 +87,7 @@ For more information, you can check the documentation [smach_service](https://gi
   
 =======================================================================================
 **Task5:** pick and place servie scripts
+
 **[Description]**: using service to achieve pick and place box task
 ````
 roslaunch birl_sim_examples pick_n_place_box_service.launch
