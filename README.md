@@ -50,25 +50,42 @@ catkin_make
  And finished! Enjoy it.
 
 # Launch Examples
+=======================================================================================
 **Task1**: A one-arm box assembly
     
 **[Description]**: Try to assembly the male box on the female box with one arm.
 ````
 roslaunch birl_sim_examples place_box.launch
 ````
-
+=======================================================================================
 **Task2:** A one-arm snap assembly using a plastic camera mold with male and female parts
 
 **[Description]:** Try to assembly the male snap on the female snap using a plastic camera mold with one arm
 ````
 roslaunch birl_sim_examples place_snap.launch
 ````
-
+=======================================================================================
 **Task3:** Pick and place the box
 
 **[Description]:** Pick and place the box on the table with two goals.
 ````
 roslaunch birl_sim_examples pick_n_place_box.launch
+````
+=======================================================================================
+  **Task4:** pick and place smach servie scripts
+
+````
+roslaunch birl_sim_examples pick_n_place_box_smach_service.launch
+````
+
+But we recommend you to open nodes one by one.
+
+Maybe you will find issue when launching the smach_viewer, please read the [ros_issue](http://answers.ros.org/question/172688/ros-indigo-cannot-show-graph-view-on-smach_viewer/) and do some simple change work.
+  
+=======================================================================================
+**Task5:** pick and place servie scripts
+````
+roslaunch birl_sim_examples pick_n_place_box_service.launch
 ````
 
 # Learn More
