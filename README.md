@@ -72,8 +72,8 @@ roslaunch birl_sim_examples place_snap.launch
 roslaunch birl_sim_examples pick_n_place_box.launch
 ````
 =======================================================================================
-  **Task4:** pick and place smach servie scripts
-
+**Task4:** pick and place smach servie scripts
+**[Description]**: using state machine to achieve pick and place box task
 ````
 roslaunch birl_sim_examples pick_n_place_box_smach_service.launch
 ````
@@ -81,9 +81,12 @@ roslaunch birl_sim_examples pick_n_place_box_smach_service.launch
 But we recommend you to open nodes one by one.
 
 Maybe you will find issue when launching the smach_viewer, please read the [ros_issue](http://answers.ros.org/question/172688/ros-indigo-cannot-show-graph-view-on-smach_viewer/) and do some simple change work.
+
+For more information, you can check the documentation [smach_service](https://github.com/birlrobotics/birl_baxter_simulator/wiki/smach-service)
   
 =======================================================================================
 **Task5:** pick and place servie scripts
+**[Description]**: using service to achieve pick and place box task
 ````
 roslaunch birl_sim_examples pick_n_place_box_service.launch
 ````
