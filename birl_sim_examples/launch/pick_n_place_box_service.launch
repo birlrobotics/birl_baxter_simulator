@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+
+  <!-- We resume the logic in empty_world.launch, changing the name of the world to be launched -->
+  <include file="$(find birl_baxter_description)/launch/pa_box/pick_n_place_box_gazebo.launch"/>
+
+  <!-- start the service server-->  
+  <node pkg="birl_sim_examples" type="pick_n_place_srv_server.py" name="pick_n_place_srv_server"/>
+  <!-- start the service client-->
+  <node pkg="birl_sim_examples" type="pick_n_place_srv_client.py" name="pick_n_place_client" />
+</launch>

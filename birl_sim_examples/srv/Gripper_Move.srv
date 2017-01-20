@@ -1,0 +1,8 @@
+# gripper desired position:  Close->True  Open->False
+std_msgs/Bool gripper_desired_flag
+
+---
+
+# gripper status Close->True  Open->False
+
+std_msgs/Bool gripper_status_flag

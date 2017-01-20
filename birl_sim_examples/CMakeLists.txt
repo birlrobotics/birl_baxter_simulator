@@ -20,7 +20,8 @@ find_package(catkin REQUIRED COMPONENTS
 add_service_files(
   FILES Add_Gazebo_Model.srv
   Go_To_Start_Position.srv
-  Go_To_Position.srv)
+  Go_To_Position.srv
+  Gripper_Move.srv)
 
 catkin_python_setup()
 
@@ -46,9 +47,9 @@ catkin_package(
 #############
 ## Install ##
 #############
-
-install(DIRECTORY scripts/
-   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+install(
+  DIRECTORY scripts/
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 foreach(dir launch )
