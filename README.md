@@ -55,29 +55,42 @@ catkin_make
     
 **[Description]**: Try to assembly the male box on the female box with one arm.
 ````
-roslaunch birl_sim_examples place_box.launch
+    roslaunch birl_sim_examples place_box.launch
 ````
 =======================================================================================
 **Task2:** A one-arm snap assembly using a plastic camera mold with male and female parts
 
 **[Description]:** Try to assembly the male snap on the female snap using a plastic camera mold with one arm
 ````
-roslaunch birl_sim_examples place_snap.launch
+    roslaunch birl_sim_examples place_snap.launch
 ````
 =======================================================================================
 **Task3:** Pick and place the box
 
 **[Description]:** Pick and place the box on the table with two goals.
 ````
-roslaunch birl_sim_examples pick_n_place_box.launch
+    roslaunch birl_sim_examples pick_n_place_box.launch
 ````
 =======================================================================================
 **Task4:** pick and place smach servie scripts
 
 **[Description]**: using state machine to achieve pick and place box task
 ````
-roslaunch birl_sim_examples pick_n_place_box_smach_service.launch
+    $roslaunch birl_sim_examples pick_n_place_box_smach_service.launch
 ````
+
+
+=======================================================================================
+**Task5:** pick and place the random box
+
+**[Description]**: pick and place the box from random start position to random destination
+````
+    $roslaunch birl_baxter_description pick_n_place_box_gazebo.launch
+    $rosrun birl_sim_examples pick_n_place_srv_server.py
+    $rosrun birl_sim_examples pick_n_place_srv_client_random.py
+````
+
+
 
 But we recommend you to open nodes one by one.
 
