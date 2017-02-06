@@ -231,3 +231,33 @@ def delete_gazebo_models():
         resp_delete = delete_model("box_female")
     except rospy.ServiceException, e:
         rospy.loginfo("Delete Model service call failed: {0}".format(e))
+
+
+
+def ik_request_check(pose,limb):
+    hdr = Header(stamp=rospy.Time.now(), frame_id='base')
+    ikreq = SolvePositionIKRequest()
+    ikreq.pose_stamp.append(PoseStamped(header=hdr, pose=pose))
+    ns = "ExternalTools/" + limb + "/PositionKinematicsNode/IKService"
+    iksvc = rospy.ServiceProxy(ns, SolvePositionIK)
+    try:
+        resp = iksvc(ikreq)
+    except (rospy.ServiceException, rospy.ROSException), e:
+        rospy.logerr("Service call failed: %s" % (e,))
+        return False
+    # Check if result valid, and type of seed ultimately used to get solution
+    # convert rospy's string representation of uint8[]'s to int's
+    resp_seeds = struct.unpack('<%dB' % len(resp.result_type), resp.result_type)
+    limb_joints = {}
+    if (resp_seeds[0] != resp.RESULT_INVALID):
+        seed_str = {
+                    ikreq.SEED_USER: 'User Provided Seed',
+                    ikreq.SEED_CURRENT: 'Current Joint Angles',
+                    ikreq.SEED_NS_MAP: 'Nullspace Setpoints',
+                   }.get(resp_seeds[0], 'None')
+        # Format solution into Limb API-compatible dictionary
+        limb_joints = dict(zip(resp.joints[0].name, resp.joints[0].position))
+    else:
+        rospy.logerr("INVALID POSE - No Valid Joint Solution Found.")
+        return False
+    return True        
