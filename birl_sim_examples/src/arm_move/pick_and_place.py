@@ -91,12 +91,10 @@ class PickAndPlace(object):
 
     def _guarded_move_to_joint_position(self, joint_angles):
         if joint_angles:
-            self._limb.move_to_joint_positions(joint_angles)
+            self._limb.move_to_joint_positions(joint_angles,timeout=8)
             rospy.loginfo("move to joint_angles finished")
-            return True
         else:
             rospy.logerr("No Joint Angles provided for move_to_joint_positions. Staying put.")
-            return False
 
     def gripper_open(self):
         self._gripper.open()

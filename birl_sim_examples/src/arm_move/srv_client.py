@@ -63,6 +63,7 @@ def go_to_position_client(pose):
         req.pose = copy.deepcopy(pose)
         resp = go_to_position_proxy(req)
         rospy.loginfo("go to desired position succesfully!")
+        return (resp.ik_flag.data, resp.action_flag.data)
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
         

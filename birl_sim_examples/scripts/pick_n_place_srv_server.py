@@ -64,11 +64,11 @@ def go_to_start_position_handle(req):
     std_msgs/Bool finish
 
     """
-    flag = pnp._guarded_move_to_joint_position(starting_joint_angles)
+    pnp._guarded_move_to_joint_position(starting_joint_angles)
     pnp.gripper_open()
     rospy.sleep(1.0)
     resp = Go_To_Start_PositionResponse()
-    resp.finish.data = flag
+    resp.finish.data = True
     return resp
 
 def go_to_position_handle(req):
@@ -93,11 +93,19 @@ def go_to_position_handle(req):
     resp = Go_To_PositionResponse()
     if joint_angles:
         resp.ik_flag.data = True
-        action_flag = pnp._guarded_move_to_joint_position(joint_angles)
+        time_prev = rospy.Time.now()
+        pnp._guarded_move_to_joint_position(joint_angles)
+        action_duration = rospy.Time.now() - time_prev
+        print "Moving Action Time Duration %f"%action_duration.to_sec()
+        if action_duration.to_sec() >= 7.0:
+            resp.action_flag.data = False
+        else:
+            resp.action_flag.data = True
+         
     else:
         resp.ik_flag.data = False
-        
-    resp.action_flag.data = action_flag
+    print ("ik_flag ={}", format(resp.ik_flag.data))
+    print ("action_flag ={}", format(resp.action_flag.data))
     return resp
 
 def gripper_move_handle(req):
