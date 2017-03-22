@@ -3,6 +3,7 @@
 pick and place service smach server
 """
 
+import baxter_interface
 from arm_move import pick_and_place
 from birl_sim_examples.srv import *
 
@@ -11,9 +12,11 @@ import rospy
 import copy
 
 from arm_move.srv_client import *
+from arm_move import srv_action_client
 
 import smach
 import smach_ros
+
 
 from geometry_msgs.msg import (
     PoseStamped,
@@ -24,18 +27,29 @@ from geometry_msgs.msg import (
 
 import ipdb
 
-import random
-
 class Go_to_Start_Position(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['Succeed'])
-        self.state = 1
         
     def execute(self, userdata):
         rospy.loginfo('executing Go to Start position...')
-        hmm_state_switch_client(self.state)
-        go_to_start_position_client()
+        current_angles = [limb_interface.joint_angle(joint) for joint in limb_interface.joint_names()]
+        starting_joint_angles = {'right_w0': -0.6699952259595108,
+                             'right_w1': 1.030009435085784,
+                             'right_w2': 0.4999997247485215,
+                             'right_e0': -0.189968899785275,
+                             'right_e1': 1.9400238130755056,
+                             'right_s0': 0.08000397926829805,
+                             'right_s1': -0.9999781166910306}
+        limb_names = ['right_s0', 'right_s1', 'right_e0', 'right_e1', 'right_w0', 'right_w1', 'right_w2']
+        starting_joint_order_angles = [starting_joint_angles[joint] for joint in limb_names]
+        traj.clear('right')
+        traj.add_point(current_angles, 0.0)
+        traj.add_point(starting_joint_order_angles, 5.0)
+        traj.start()
+        traj.wait(10.0)
+        gripper_move_client(False)
         return 'Succeed'
         
 class Setting_Start_and_End_Pose(smach.State):
@@ -48,9 +62,9 @@ class Setting_Start_and_End_Pose(smach.State):
         self.pick_object_pose = Pose()
         self.place_object_pose = Pose()
         
-        self.pick_object_pose.position.x = 0.6
+        self.pick_object_pose.position.x = 0.7
         self.pick_object_pose.position.y = -0.4
-        self.pick_object_pose.position.z = -0.115 - 0.005
+        self.pick_object_pose.position.z = -0.115
         #RPY = 0 pi 0
         self.pick_object_pose.orientation = Quaternion(
             x=0.0,
@@ -58,9 +72,9 @@ class Setting_Start_and_End_Pose(smach.State):
             z=0.0,
             w=6.123233995736766e-17)
       
-        self.place_object_pose.position.x = 0.6
-        self.place_object_pose.position.y = -0.2
-        self.place_object_pose.position.z = -0.115 - 0.005
+        self.place_object_pose.position.x = 0.7
+        self.place_object_pose.position.y = -0.1
+        self.place_object_pose.position.z = -0.115
         self.place_object_pose.orientation = Quaternion(
             x=0.0,
             y=1.0,
@@ -86,90 +100,64 @@ class Add_Box_Gazebo_Model(smach.State):
                                 _model_reference_frame="base")
         return 'Succeed'
 
-class Go_to_Pick_Hover_Position(smach.State):
+class Go_to_Pick_Position(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['Succeed','IK_Fail','Time_Out'],
                              input_keys=['pick_object_pose','hover_distance'])
-        self.state = 2
         
     def execute(self, userdata):
-        self.pick_object_pose = copy.deepcopy(userdata.pick_object_pose)
-        self.pick_object_pose.position.z = self.pick_object_pose.position.z + userdata.hover_distance
-        hmm_state_switch_client(self.state)
-        (ik_flag, action_flag) = go_to_position_client(pose = self.pick_object_pose)
-        if not ik_flag:
-            return 'IK_Fail'
-        elif not action_flag:
-            return 'Time_Out'
-        else:
-            return 'Succeed'
+        current_angles = [limb_interface.joint_angle(joint) for joint in limb_interface.joint_names()]
+        pick_object_pose = copy.deepcopy(userdata.pick_object_pose)
+        hover_pick_object_pose = copy.deepcopy(pick_object_pose)
+        hover_pick_object_pose.position.z = hover_pick_object_pose.position.z + userdata.hover_distance
+        hover_pick_angles = traj.ik_request(hover_pick_object_pose)
+        pick_angles = traj.ik_request(pick_object_pose)
+        traj.clear('right')
+        traj.add_point(current_angles, 0.0)
+        traj.add_point(hover_pick_angles, 5.0)
+        traj.add_point(pick_angles, 10.0)
+        traj.start()
+        traj.wait(15.0)
+        gripper_move_client(True)
+        rospy.sleep(1)
+        return 'Succeed'
 
-
-class Pick_Object(smach.State):
-    def __init__(self):
-        smach.State.__init__(self,
-                             outcomes=['Succeed','IK_Fail', 'Time_Out'],
-                             input_keys=['pick_object_pose','hover_distance'])
-        self.state = 3
-        
-    def execute(self, userdata):
-        gripper_move_client(is_move_close = False)
-        self.pick_object_pose = copy.deepcopy(userdata.pick_object_pose)
-        (ik_flag, action_flag) = go_to_position_client(pose = self.pick_object_pose)
-        gripper_move_client(is_move_close = True)
-        self.pick_object_pose.position.z =self.pick_object_pose.position.z+ userdata.hover_distance
-        hmm_state_switch_client(self.state)
-        (ik_flag, action_flag) = go_to_position_client(pose = self.pick_object_pose)
-        if not ik_flag:
-            return 'IK_Fail'
-        elif not action_flag:
-            return 'Time_Out'
-        else:
-            return 'Succeed'
-
-
-class Go_to_Place_Hover_Position(smach.State):
+class Go_to_Place_Position(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['Succeed','IK_Fail','Time_Out'],
-                             input_keys=['place_object_pose','hover_distance'])
-        self.state = 4
+                             input_keys=['pick_object_pose','place_object_pose','hover_distance'])
         
     def execute(self, userdata):
-        self.place_object_pose = copy.deepcopy(userdata.place_object_pose)
-        self.place_object_pose.position.z = self.place_object_pose.position.z + userdata.hover_distance
-        hmm_state_switch_client(self.state)
-        (ik_flag, action_flag) = go_to_position_client(pose = self.place_object_pose)
-        if not ik_flag:
-            return 'IK_Fail'
-        elif not action_flag:
-            return 'Time_Out'
-        else:
-            return 'Succeed'
-
-
-class Place_Object(smach.State):
-    def __init__(self):
-        smach.State.__init__(self,
-                             outcomes=['Succeed','IK_Fail','Time_Out'],
-                             input_keys=['place_object_pose','hover_distance'])
-        self.state = 5
+        current_angles = [limb_interface.joint_angle(joint) for joint in limb_interface.joint_names()]
+        pick_object_pose = copy.deepcopy(userdata.pick_object_pose)
+        hover_pick_object_pose = copy.deepcopy(userdata.pick_object_pose)
+        hover_pick_object_pose.position.z = pick_object_pose.position.z + userdata.hover_distance
+        place_object_pose = copy.deepcopy(userdata.place_object_pose)
+        hover_place_object_pose = copy.deepcopy(place_object_pose)
+        hover_place_object_pose.position.z = hover_place_object_pose.position.z + userdata.hover_distance
+        hover_pick_angles = traj.ik_request(hover_pick_object_pose)
+        hover_place_angles = traj.ik_request(hover_place_object_pose)
+        pick_angles = traj.ik_request(pick_object_pose)
+        place_angles = traj.ik_request(place_object_pose)
+        traj.clear('right')
+        traj.add_point(current_angles, 0.0)
+        traj.add_point(hover_pick_angles, 5.0)
+        traj.add_point(hover_place_angles, 10.0)
+        traj.add_point(place_angles, 15.0)
+        traj.start()
+        traj.wait(20.0)
+        gripper_move_client(False)
+        return 'Succeed'
         
-    def execute(self, userdata):
-        self.place_object_pose = copy.deepcopy(userdata.place_object_pose)
-        (ik_flag, action_flag) = go_to_position_client(pose = self.place_object_pose)
-        gripper_move_client(is_move_close = False)
-        self.place_object_pose.position.z =self.place_object_pose.position.z+ userdata.hover_distance
-        hmm_state_switch_client(self.state)
-        (ik_flag, action_flag) = go_to_position_client(pose = self.place_object_pose)        
-        if not ik_flag:
-            return 'IK_Fail'
-        elif not action_flag:
-            return 'Time_Out'
-        else:
-            return 'Succeed' 
-    
+def shutdown():
+    rospy.loginfo("Stopping the node...")
+    pick_and_place.delete_gazebo_models()
+    traj.clear('right')
+    traj.stop()
+
+        
 def main():
     """RSDK Inverse Kinematics Pick and Place Example
 
@@ -194,6 +182,14 @@ def main():
     sm.userdata.sm_pick_object_pose = Pose()
     sm.userdata.sm_place_object_pose = Pose()
     sm.userdata.sm_hover_distance = 0.15
+
+    global traj
+    global limb_interface
+
+    limb = 'right'
+    traj = srv_action_client.Trajectory(limb)
+    limb_interface = baxter_interface.limb.Limb(limb)
+    
     with sm:
         smach.StateMachine.add('Go_to_Start_Position',Go_to_Start_Position(),
                                transitions={'Succeed':'Setting_Start_and_End_Pose'})
@@ -202,35 +198,22 @@ def main():
                                remapping={'pick_object_pose':'sm_pick_object_pose',
                                'place_object_pose':'sm_place_object_pose'})
         smach.StateMachine.add('Add_Box_Gazebo_Model',Add_Box_Gazebo_Model(),
-                               transitions={'Succeed':'Go_to_Pick_Hover_Position'},
+                               transitions={'Succeed':'Go_to_Pick_Position'},
                                remapping={'pick_object_pose':'sm_pick_object_pose'})
                                
-        smach.StateMachine.add('Go_to_Pick_Hover_Position',Go_to_Pick_Hover_Position(),
-                               transitions={'Succeed':'Pick_Object',
+        smach.StateMachine.add('Go_to_Pick_Position',Go_to_Pick_Position(),
+                               transitions={'Succeed':'Go_to_Place_Position',
                                             'IK_Fail':'Go_to_Start_Position',
                                             'Time_Out':'Go_to_Start_Position'},
                                remapping={'pick_object_pose':'sm_pick_object_pose',
                                           'hover_distance':'sm_hover_distance'})
 
-        smach.StateMachine.add('Pick_Object',Pick_Object(),
-                               transitions={'Succeed':'Go_to_Place_Hover_Position',
-                                            'IK_Fail':'Go_to_Start_Position',
-                                            'Time_Out':'Go_to_Start_Position'},
-                               remapping={'pick_object_pose':'sm_pick_object_pose',
-                                          'hover_distance':'sm_hover_distance'})
-
-        smach.StateMachine.add('Go_to_Place_Hover_Position',Go_to_Place_Hover_Position(),
-                               transitions={'Succeed':'Place_Object',
-                                            'IK_Fail':'Go_to_Start_Position',
-                                            'Time_Out':'Go_to_Start_Position'},
-                               remapping={'place_object_pose':'sm_place_object_pose',
-                                          'hover_distance':'sm_hover_distance'})
-
-        smach.StateMachine.add('Place_Object',Place_Object(),
+        smach.StateMachine.add('Go_to_Place_Position',Go_to_Place_Position(),
                                transitions={'Succeed':'Done',
                                             'IK_Fail':'Go_to_Start_Position',
                                             'Time_Out':'Go_to_Start_Position'},
                                remapping={'place_object_pose':'sm_place_object_pose',
+                                          'pick_object_pose':'sm_pick_object_pose',
                                           'hover_distance':'sm_hover_distance'})
   
     sis = smach_ros.IntrospectionServer('MY_SERVER', sm, '/SM_ROOT')

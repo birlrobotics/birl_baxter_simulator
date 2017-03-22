@@ -16,12 +16,18 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   )
 
+add_message_files(DIRECTORY msg FILES
+  Tag_EndpointPose.msg
+  Hmm_Log.msg
+)
+
 # Generate services in the 'srv' folder
 add_service_files(
   FILES Add_Gazebo_Model.srv
   Go_To_Start_Position.srv
   Go_To_Position.srv
-  Gripper_Move.srv)
+  Gripper_Move.srv
+  State_Switch.srv)
 
 catkin_python_setup()
 
@@ -41,6 +47,8 @@ catkin_package(
   baxter_tools
   gazebo_ros
   gazebo_msgs
+  std_msgs
+  message_runtime
   baxter_sim_kinematics
   )
 

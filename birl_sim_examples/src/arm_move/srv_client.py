@@ -38,7 +38,7 @@ def add_gazebo_model_client(_model_name,
         req.model_pose = _model_pose
         req.model_reference_frame.data = _model_reference_frame
         resp = add_gazebo_box_model(req)
-        rospy.loginfo("loading box succuessfuly")
+        #rospy.loginfo("loading box succuessfuly")
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
     
@@ -50,7 +50,7 @@ def go_to_start_position_client():
         req = Go_To_Start_PositionRequest()
         req.start.data = True
         resp = go_to_start_position_proxy(req)
-        rospy.loginfo("go to start position succesfully!")
+        #rospy.loginfo("go to start position succesfully!")
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
@@ -62,7 +62,7 @@ def go_to_position_client(pose):
         req = Go_To_PositionRequest()
         req.pose = copy.deepcopy(pose)
         resp = go_to_position_proxy(req)
-        rospy.loginfo("go to desired position succesfully!")
+        #rospy.loginfo("go to desired position succesfully!")
         return (resp.ik_flag.data, resp.action_flag.data)
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
@@ -75,7 +75,24 @@ def gripper_move_client(is_move_close):
         req = Gripper_MoveRequest()
         req.gripper_desired_flag.data = is_move_close
         resp = gripper_move_proxy(req)
-        rospy.loginfo("go to desired position succesfully!")
+        if is_move_close:
+            s = "Close"
+        else:
+            s = "Open"
+        print "Gripper %s !"%s
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e
+        
+def hmm_state_switch_client(state):
+    rospy.wait_for_service('hmm_state_switch')
+    try:
+        hmm_state_switch_proxy = rospy.ServiceProxy('hmm_state_switch',
+                                                    State_Switch)
+        req = State_SwitchRequest()
+        req.state = state
+        resp = hmm_state_switch_proxy(req)
+        if resp.finish.data:
+            print "Hmm State switch to %d succesfully" %state
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
         

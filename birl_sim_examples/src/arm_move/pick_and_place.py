@@ -35,7 +35,7 @@ class PickAndPlace(object):
     def __init__(self, limb, hover_distance = 0.15, verbose=True):
         self._limb_name = limb # string
         self._hover_distance = hover_distance # in meters
-        self._verbose = verbose # bool
+        self._verbose = False # bool
         self._limb = baxter_interface.Limb(limb)
         self._gripper = baxter_interface.Gripper(limb)
         ns = "ExternalTools/" + limb + "/PositionKinematicsNode/IKService"
@@ -92,7 +92,7 @@ class PickAndPlace(object):
     def _guarded_move_to_joint_position(self, joint_angles):
         if joint_angles:
             self._limb.move_to_joint_positions(joint_angles,timeout=8)
-            rospy.loginfo("move to joint_angles finished")
+            #rospy.loginfo("move to joint_angles finished")
         else:
             rospy.logerr("No Joint Angles provided for move_to_joint_positions. Staying put.")
 

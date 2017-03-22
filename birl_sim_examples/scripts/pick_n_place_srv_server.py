@@ -19,6 +19,9 @@ from std_msgs.msg import (
 )
 
 from birl_sim_examples.srv import *
+from baxter_core_msgs.msg import EndpointState 
+from birl_sim_examples.msg import Tag_EndpointPose
+
 
 import ipdb
 
@@ -91,6 +94,9 @@ def go_to_position_handle(req):
     _pose = copy.deepcopy(req.pose)
     joint_angles = pnp.ik_request(_pose)
     resp = Go_To_PositionResponse()
+    print "Endeffector Destination Pose x=%f y=%f z=%f ox=%f oy=%f oz=%f ow=%f" %(
+                       req.pose.position.x,req.pose.position.y,req.pose.position.z,
+                       req.pose.orientation.x,req.pose.orientation.y,req.pose.orientation.z,req.pose.orientation.w)
     if joint_angles:
         resp.ik_flag.data = True
         time_prev = rospy.Time.now()
@@ -104,8 +110,11 @@ def go_to_position_handle(req):
          
     else:
         resp.ik_flag.data = False
-    print ("ik_flag ={}", format(resp.ik_flag.data))
-    print ("action_flag ={}", format(resp.action_flag.data))
+    if not resp.ik_flag:
+        rospy.info("IK Solution Check not pass!")
+    if not resp.action_flag:
+        rospy.info("Arm Motion did not complete for timeout!")
+
     return resp
 
 def gripper_move_handle(req):
@@ -133,6 +142,8 @@ def gripper_move_handle(req):
 
     return resp
 
+
+
 def pick_and_place_servers():
     #initiating the node
     rospy.init_node('pick_and_place_server')
@@ -141,32 +152,41 @@ def pick_and_place_servers():
     #create the service servers:
     add_gz_model_server = rospy.Service('add_gazebo_box_model', Add_Gazebo_Model,
                                         add_gz_model_handle)
-    rospy.loginfo("starting the add_gazebo_box_model service finished!")
+    #rospy.loginfo("starting the add_gazebo_box_model service finished!")
     
     go_to_start_position = rospy.Service('go_to_start_position', Go_To_Start_Position,
                                         go_to_start_position_handle)
     
-    rospy.loginfo("starting the go_to_start_position service finished!")
+    #rospy.loginfo("starting the go_to_start_position service finished!")
 
     go_to_position = rospy.Service('go_to_position', Go_To_Position,
                                    go_to_position_handle)
     
-    rospy.loginfo("starting the go_to_position service finished!")
+    #rospy.loginfo("starting the go_to_position service finished!")
     
     gripper_move = rospy.Service('gripper_move', Gripper_Move,
                                  gripper_move_handle)
     
-    rospy.loginfo("starting the gripper_move service finished!")    
+    #rospy.loginfo("starting the gripper_move service finished!")
+
+
+
+    
+
 def main():
+    global starting_joint_angles
+    global pnp
     #ipdb.set_trace()
-    # initiating the node and service
+    # init the node and set up the services
     pick_and_place_servers()
+    # set up the topic
     # choose the move arm
     limb = 'right'
     # pick and place hover distance
     hover_distance = 0.15 # meters
     # Starting Joint angles for arm, initial state
-    global starting_joint_angles
+
+    
     starting_joint_angles = {'right_w0': -0.6699952259595108,
                              'right_w1': 1.030009435085784,
                              'right_w2': 0.4999997247485215,
@@ -175,7 +195,6 @@ def main():
                              'right_s0': 0.08000397926829805,
                              'right_s1': -0.9999781166910306}
     #initiating the PickAndPlace class
-    global pnp
     pnp = pick_and_place.PickAndPlace(limb, hover_distance)
     # An orientation for gripper fingers to be overhead and parallel to the obj
     overhead_orientation = Quaternion(
@@ -213,7 +232,7 @@ def main():
     block_poses.append(Pose(
         position=Point(x=0.6, y=-0.2, z=-0.115-0.005),
         orientation=object_orientation))
-
+    rospy.loginfo("All serivices and topics have been set up!")
     rospy.spin()
 
 if __name__ == '__main__':
