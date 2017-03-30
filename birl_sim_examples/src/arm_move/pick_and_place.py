@@ -182,10 +182,10 @@ def load_gazebo_models(model_name,
                        model_reference_frame="base"):
     if model_name == "box_male":
         # Get male box Path
-        model_path = rospkg.RosPack().get_path('birl_baxter_description')+"/urdf/box/"
+        model_path = rospkg.RosPack().get_path('birl_baxter_description')+"/urdf/"
         # Load male box SDF
         box_male_xml = ''
-        with open (model_path + "box_male/robots/box_male.URDF", "r") as box_male_file:
+        with open (model_path + "box/box_male/robots/box_male.URDF", "r") as box_male_file:
             box_male_xml=box_male_file.read().replace('\n', '')
         rospy.wait_for_service('/gazebo/spawn_urdf_model')
         try:
@@ -200,10 +200,10 @@ def load_gazebo_models(model_name,
 
     if model_name == "box_female":
         # get path
-        model_path = rospkg.RosPack().get_path('birl_baxter_description')+"/urdf/box/"
+        model_path = rospkg.RosPack().get_path('birl_baxter_description')+"/urdf/"
         # Load female box  URDF
         box_female_xml = ''
-        with open (model_path + "box_female/robots/box_female.URDF", "r") as box_female_file:
+        with open (model_path + "box/box_female/robots/box_female.URDF", "r") as box_female_file:
             box_female_xml=box_female_file.read().replace('\n', '')
         rospy.wait_for_service('/gazebo/spawn_urdf_model')
         try:
@@ -211,6 +211,23 @@ def load_gazebo_models(model_name,
             resp_urdf2 = spawn_urdf2("box_female", box_female_xml, "/",
                                     model_pose, model_reference_frame)
             rospy.loginfo("loading female box succesfully")
+        except rospy.ServiceException, e:
+            rospy.logerr("Spawn URDF service call failed: {0}".format(e))
+            return False
+
+    if model_name == "table_upgrade":
+        # get path
+        model_path = rospkg.RosPack().get_path('birl_baxter_description')+"/urdf/"
+        # Load table upgrade  URDF
+        table_upgrade_xml = ''
+        with open (model_path + "table_upgrade/robots/table_upgrade.URDF", "r") as table_upgrade_file:
+            table_upgrade_xml=table_upgrade_file.read().replace('\n', '')
+        rospy.wait_for_service('/gazebo/spawn_urdf_model')
+        try:
+            spawn_urdf4 = rospy.ServiceProxy('/gazebo/spawn_urdf_model', SpawnModel)
+            resp_urdf4 = spawn_urdf4("table_upgrade", table_upgrade_xml, "/",
+                                    model_pose, model_reference_frame)
+            rospy.loginfo("loading table_upgrade  succesfully")
         except rospy.ServiceException, e:
             rospy.logerr("Spawn URDF service call failed: {0}".format(e))
             return False

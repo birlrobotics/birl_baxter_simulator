@@ -16,6 +16,8 @@ from geometry_msgs.msg import (
 from std_msgs.msg import (
     Empty,
 )
+
+import ipdb
 def main():
     """RSDK Inverse Kinematics Pick and Place Example
 
@@ -30,7 +32,7 @@ def main():
     can improve on this demo by adding perception and feedback to close
     the loop.
     """
-    #ipdb.set_trace()
+    ipdb.set_trace()
     rospy.init_node("pa_box")
     # Load Gazebo Models via Spawning Services
     # Note that the models reference is the /world frame
@@ -46,6 +48,10 @@ def main():
                                      model_reference_frame="base")
     pick_and_place.load_gazebo_models(model_name="box_female",
                                       model_pose=Pose(position=Point(x=0.6, y=0.4, z=-0.115),
+                                                      orientation=Quaternion(x=0,y=0,z=0,w=1)),
+                                      model_reference_frame="base")
+    pick_and_place.load_gazebo_models(model_name="box_cover",
+                                      model_pose=Pose(position=Point(x=0.6, y=0, z=-0.12),
                                                       orientation=Quaternion(x=0,y=0,z=0,w=1)),
                                       model_reference_frame="base")
     limb = 'right'

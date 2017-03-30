@@ -76,15 +76,18 @@ def main():
     can improve on this demo by adding perception and feedback to close
     the loop.
     """
-    #ipdb.set_trace()
     rospy.init_node("pick_n_place_client")
     rospy.wait_for_message("/robot/sim/started", Empty)
-    #ipdb.set_trace()
+    ipdb.set_trace()
     add_gazebo_model_client(_model_name="box_male",
                             _model_pose=Pose(position=Point(x=0.6, y=0, z=-0.115),
                                             orientation=Quaternion(x=0,y=0,z=0,w=1)),
                             _model_reference_frame="base")
     add_gazebo_model_client(_model_name="box_female",
+                            _model_pose=Pose(position=Point(x=0.6, y=0.4, z=-0.115),
+                                            orientation=Quaternion(x=0,y=0,z=0,w=1)),
+                            _model_reference_frame="base")
+    add_gazebo_model_client(_model_name="box_cover",
                             _model_pose=Pose(position=Point(x=0.6, y=0.4, z=-0.115),
                                             orientation=Quaternion(x=0,y=0,z=0,w=1)),
                             _model_reference_frame="base")

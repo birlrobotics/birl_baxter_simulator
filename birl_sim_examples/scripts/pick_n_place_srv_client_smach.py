@@ -80,10 +80,20 @@ class Add_Box_Gazebo_Model(smach.State):
         
     def execute(self, userdata):
         pick_and_place.delete_gazebo_models()
-        add_gazebo_model_client(_model_name="box_female",
-                                _model_pose=Pose(position=Point(x=userdata.pick_object_pose.position.x, y=userdata.pick_object_pose.position.y, z=-0.115),
+        add_gazebo_model_client(_model_name="table_upgrade",
+                                _model_pose=Pose(position=Point(x=0.7, y=0, z=-0.13),
                                                  orientation=Quaternion(x=0,y=0,z=0,w=1)),
                                 _model_reference_frame="base")
+        
+        add_gazebo_model_client(_model_name="box_female",
+                                _model_pose=Pose(position=Point(x=userdata.pick_object_pose.position.x, y=userdata.pick_object_pose.position.y, z=-0.12),
+                                                 orientation=Quaternion(x=0,y=0,z=0,w=1)),
+                                _model_reference_frame="base")
+        add_gazebo_model_client(_model_name="box_cover",
+                                _model_pose=Pose(position=Point(x=userdata.pick_object_pose.position.x, y=userdata.pick_object_pose.position.y, z=-0.12),
+                                                 orientation=Quaternion(x=0,y=0,z=0,w=1)),
+                                _model_reference_frame="base")
+        
         return 'Succeed'
 
 class Go_to_Pick_Hover_Position(smach.State):
