@@ -13,21 +13,22 @@ from std_msgs.msg import (
     Empty
 )
 
-from baxter_core_msgs.msg import EndpointState 
-from birl_sim_examples.msg import Tag_EndpointPose
+
+from geometry_msgs.msg import WrenchStamped 
+from birl_sim_examples.msg import Tag_Wrench
 from birl_sim_examples.srv import (
     State_Switch,
     State_SwitchResponse
 )
 
 
-
-def callback(endpoint_state):
-    tag_endpointpose = Tag_EndpointPose()
-    tag_endpointpose.header = endpoint_state.header
-    tag_endpointpose.pose = endpoint_state.pose
-    tag_endpointpose.tag = hmm_state
-    pub.publish(tag_endpointpose)
+def callback(data):
+    global hmm_state
+    global pub
+    tag_wrench = Tag_Wrench()
+    tag_wrench.wrench_stamped = copy.deepcopy(data)
+    tag_wrench.tag = hmm_state
+    pub.publish(tag_wrench)
 
     
 def state_switch_handle(req):
@@ -51,14 +52,15 @@ def state_switch_handle(req):
     
 
 def main():
-    #ipdb.set_trace()
+    ipdb.set_trace()
     global pub
+    global wrench_stamp
     global hmm_state
     hmm_state = 0
-    rospy.init_node("pose_hidden_state_topic", anonymous=True)
-    #rospy.wait_for_message("/robot/sim/started", Empty)
-    rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, callback)
-    pub = rospy.Publisher("/tag_endpointpose",Tag_EndpointPose, queue_size=10)
+    rospy.init_node("tag_wrench_topic", anonymous=True)
+    rospy.wait_for_message("/robot/sim/started", Empty)
+    rospy.Subscriber("/wrench/filtered/right", WrenchStamped, callback)
+    pub = rospy.Publisher("/tag_wrench",Tag_Wrench, queue_size=10)
     state_switch = rospy.Service('hmm_state_switch', State_Switch, state_switch_handle)
     rospy.spin()
     return 0

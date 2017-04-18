@@ -186,7 +186,7 @@ def main():
     """
     rospy.init_node("pick_n_place_client")
     rospy.on_shutdown(shutdown)
-    rospy.wait_for_message("/robot/sim/started", Empty)
+    #rospy.wait_for_message("/robot/sim/started", Empty)
     ipdb.set_trace()
  
     sm = smach.StateMachine(outcomes=['Done'])

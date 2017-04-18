@@ -26,33 +26,33 @@ from birl_sim_examples.msg import Tag_EndpointPose
 import ipdb
 
 
-def add_gz_model_handle(req):
-    """
-    The handle for pick and place server when getting the request from 
-    service add_gazebo_box_model
+# def add_gz_model_handle(req):
+#     """
+#     The handle for pick and place server when getting the request from 
+#     service add_gazebo_box_model
 
-    Add_Gazebo_Model.srv:
-    # name of model box_female/box_male
-    std_msgs/String model_name
+#     Add_Gazebo_Model.srv:
+#     # name of model box_female/box_male
+#     std_msgs/String model_name
 
-    # Pose of the model
-    geometry_msgs/Pose model_pose
+#     # Pose of the model
+#     geometry_msgs/Pose model_pose
 
-    # reference frame
-    std_msgs/String model_reference_frame
+#     # reference frame
+#     std_msgs/String model_reference_frame
 
-    ---
+#     ---
 
-    # status of loading
-    std_msgs/Bool load_status
+#     # status of loading
+#     std_msgs/Bool load_status
 
-    """
-    _model_name = req.model_name.data
-    _model_pose = req.model_pose
-    resp=Add_Gazebo_ModelResponse()
-    resp.load_status.data = pick_and_place.load_gazebo_models(model_name=_model_name,
-                                                              model_pose=_model_pose)
-    return resp
+#     """
+#     _model_name = req.model_name.data
+#     _model_pose = req.model_pose
+#     resp=Add_Gazebo_ModelResponse()
+#     resp.load_status.data = pick_and_place.load_gazebo_models(model_name=_model_name,
+#                                                               model_pose=_model_pose)
+#     return resp
 
 def go_to_start_position_handle(req):
     """
@@ -150,10 +150,10 @@ def pick_and_place_servers():
     #wait for gazebo environment ready!
     #rospy.wait_for_message("/robot/sim/started", Empty)
     #create the service servers:
-    add_gz_model_server = rospy.Service('add_gazebo_box_model', Add_Gazebo_Model,
-                                        add_gz_model_handle)
+    #add_gz_model_server = rospy.Service('add_gazebo_box_model', Add_Gazebo_Model,
+    #                                    add_gz_model_handle)
     #rospy.loginfo("starting the add_gazebo_box_model service finished!")
-    
+
     go_to_start_position = rospy.Service('go_to_start_position', Go_To_Start_Position,
                                         go_to_start_position_handle)
     

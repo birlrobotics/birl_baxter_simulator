@@ -245,7 +245,7 @@ def main():
    # rospy.on_shutdown(delete_gazebo_models)
 
     # Wait for the All Clear from emulator startup
-    rospy.wait_for_message("/robot/sim/started", Empty)
+    #rospy.wait_for_message("/robot/sim/started", Empty)
 
     limb = 'right'
     hover_distance = 0.15 # meters

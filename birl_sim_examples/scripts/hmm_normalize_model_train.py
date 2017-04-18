@@ -6,7 +6,6 @@ from matplotlib import pyplot as plt
 from hmmlearn.hmm import *
 from sklearn.externals import joblib
 import ipdb
-from sklearn.preprocessing import scale
 
 
 
@@ -26,19 +25,8 @@ def matplot_list(list_data):
     plt.legend(loc='lower left', frameon=True)
 
 
-def scaling(X):
-    _index, _column = X.shape
-    Data_scaled = []
-    scale_length = 10
-    for i in range(scale_length, _index-scale_length-2):
-        scaled = scale(X[i-scale_length:i+scale_length + 1, :])
-        Data_scaled.append(scaled[scale_length,:])
-
-    scaled_array = np.asarray(Data_scaled)
-    return scaled_array
-    
 def main():
-    ipdb.set_trace()
+    #ipdb.set_trace()
 
     n_state = 2
 
@@ -65,51 +53,33 @@ def main():
 
 
     Data = [X_1_,X_2_,X_3_,X_4_,X_5_]
-
-    scaled_X_1 = scaling(X_1_)
-    scaled_X_2 = scaling(X_2_)
-    scaled_X_3 = scaling(X_3_)
-    scaled_X_4 = scaling(X_4_)
-    scaled_X_5 = scaling(X_5_)
-
-    scaled_index_1, scaled_column_1 = scaled_X_1.shape
-    scaled_index_2, scaled_column_2 = scaled_X_1.shape
-    scaled_index_3, scaled_column_3 = scaled_X_1.shape
-    scaled_index_4, scaled_column_4 = scaled_X_1.shape
-    scaled_index_5, scaled_column_5 = scaled_X_1.shape
-
-    
-    Data_scaled = [scaled_X_1, scaled_X_2, scaled_X_3, scaled_X_4, scaled_X_5]
-
-    
-    
         
     start_prob = np.zeros(n_state)
     start_prob[0] = 1
     model_1 =GaussianHMM(n_components=n_state, covariance_type="diag",
                          params="mct", init_params="cmt", n_iter=1000)
     model_1.startprob_ = start_prob
-    model_1 = model_1.fit(Data_scaled[0])
+    model_1 = model_1.fit(Data[0])
 
     model_2 =GaussianHMM(n_components=n_state, covariance_type="diag",
                          params="mct", init_params="cmt", n_iter=1000)
     model_2.startprob_ = start_prob
-    model_2 = model_2.fit(Data_scaled[1])
+    model_2 = model_2.fit(Data[1])
 
     model_3 =GaussianHMM(n_components=n_state, covariance_type="diag",
                          params="mct", init_params="cmt", n_iter=1000)
     model_3.startprob_ = start_prob
-    model_3 = model_3.fit(Data_scaled[2])
+    model_3 = model_3.fit(Data[2])
 
     model_4 =GaussianHMM(n_components=n_state, covariance_type="diag",
                          params="mct", init_params="cmt", n_iter=1000)
     model_4.startprob_ = start_prob
-    model_4 = model_4.fit(Data_scaled[3])
+    model_4 = model_4.fit(Data[3])
 
     model_5 =GaussianHMM(n_components=2, covariance_type="diag",
                          params="mct", init_params="cmt", n_iter=1000)
     model_5.startprob_ = [1,0]
-    model_5 = model_5.fit(Data_scaled[4])
+    model_5 = model_5.fit(Data[4])
 
     # save the models
     joblib.dump(model_1,"/home/ben/ML_data/pick_n_place_smach_tag/01/model/model_s1.pkl")
@@ -130,43 +100,42 @@ def main():
     log_5_sum_data = [0,0]
     
     ix_list = [index_1,index_2,index_3,index_4,index_5]
-    scale_ix_list = [scaled_index_1, scaled_index_2, scaled_index_3, scaled_index_4, scaled_index_5]
     for j in range(5):
         log_1 =[]
         log_2 =[]
         log_3 =[]
         log_4 =[]
         log_5 =[]
-        for i in range(1,scale_ix_list[j]):
-            log, Z = model_1.decode(Data_scaled[j][:i])
+        for i in range(1,ix_list[j]):
+            log, Z = model_1.decode(Data[j][:i])
             log_1.append(log)
             if i == 2:
                 log_1_sum_data.append(log)
             else:
                 log_1_sum_data.append(log+log_1_sum_data[-1])
             
-            log, Z = model_2.decode(Data_scaled[j][:i])
+            log, Z = model_2.decode(Data[j][:i])
             log_2.append(log)
             if i == 2:
                 log_2_sum_data.append(log)
             else:
                 log_2_sum_data.append(log+log_2_sum_data[-1])
             
-            log, Z = model_3.decode(Data_scaled[j][:i])
+            log, Z = model_3.decode(Data[j][:i])
             log_3.append(log)
             if i == 2:
                 log_3_sum_data.append(log)
             else:
                 log_3_sum_data.append(log+log_3_sum_data[-1])
             
-            log, Z = model_4.decode(Data_scaled[j][:i])
+            log, Z = model_4.decode(Data[j][:i])
             log_4.append(log)
             if i == 2:
                 log_4_sum_data.append(log)
             else:
                 log_4_sum_data.append(log+log_4_sum_data[-1])
             
-            log, Z = model_5.decode(Data_scaled[j][:i])
+            log, Z = model_5.decode(Data[j][:i])
             log_5.append(log)
             if i == 2:
                 log_5_sum_data.append(log)
@@ -185,27 +154,27 @@ def main():
     task_log_sum_data = [log_1_sum_data,log_2_sum_data,log_3_sum_data,log_4_sum_data,log_5_sum_data]
         
     plt.figure(1,figsize=(40,30), dpi=80)
-    plt.title("Subtask 1 scaled_data trained HMM Model log-function ")
+    plt.title("Subtask 1 -trained HMM Model log-function ")
     matplot_list(task_log_data[0])
     plt.savefig("Subtask1.eps", format="eps")
 
     plt.figure(2,figsize=(40,30), dpi=80)
-    plt.title("Subtask 2 scaled_data trained HMM Model log-function ")
+    plt.title("Subtask 2 -trained HMM Model log-function ")
     matplot_list(task_log_data[1])
     plt.savefig("Subtask2.eps", format="eps")
 
     plt.figure(3,figsize=(40,30), dpi=80)
-    plt.title("Subtask 3 scaled_data trained HMM Model log-function ")
+    plt.title("Subtask 3 -trained HMM Model log-function ")
     matplot_list(task_log_data[2])
     plt.savefig("Subtask3.eps", format="eps")    
 
     plt.figure(4,figsize=(40,30), dpi=80)
-    plt.title("Subtask 4 scaled_data trained HMM Model log-function ")
+    plt.title("Subtask 4 -trained HMM Model log-function ")
     matplot_list(task_log_data[3])
     plt.savefig("Subtask4.eps", format="eps")
 
     plt.figure(5,figsize=(40,30), dpi=80)
-    plt.title("Subtask 5 scaled_data trained HMM Model log-function ")
+    plt.title("Subtask 5 -trained HMM Model log-function ")
     matplot_list(task_log_data[4])
     plt.savefig("Subtask5.eps", format="eps")
 
@@ -218,12 +187,12 @@ def main():
     # ax.spines['bottom'].set_position(('data',0))
     # ax.yaxis.set_ticks_position('left')
     # ax.spines['left'].set_position(('data',0))
-    plt.title("Full scaledData HMM Model log-sum-function ")
+    plt.title("Full Data HMM Model log-sum-function ")
     #plt.grid(True)
     matplot_list(task_log_sum_data)
     index_cum = 2
     for i in range(5):
-        index_cum = scale_ix_list[i] + index_cum -1
+        index_cum = index[i] + index_cum -1
         plt.plot([index_cum, index_cum], [-1*10**8, 5*10**7], color ='grey', linewidth=2,linestyle="--")
         print "subtask data index:%d"%index_cum
     plt.savefig("Full_sum_log.eps", format="eps")
