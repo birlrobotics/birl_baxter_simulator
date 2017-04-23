@@ -14,10 +14,13 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   geometry_msgs
+  sensor_msgs
   )
 
 add_message_files(DIRECTORY msg FILES
   Tag_EndpointPose.msg
+  Tag_Wrench.msg
+  Tag_MultiModal.msg
   Hmm_Log.msg
 )
 
@@ -35,6 +38,8 @@ generate_messages(
   DEPENDENCIES
   std_msgs
   geometry_msgs
+  sensor_msgs
+  baxter_core_msgs
 )
 
 catkin_package(

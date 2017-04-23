@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 """
 pick and place service smach server
+
+prereqursite:
+
+!!Please rosrun baxter_interface Joint_trajectory_server first!
 """
 
 import baxter_interface
-from arm_move import pick_and_place
 from birl_sim_examples.srv import *
 
 import sys
@@ -34,14 +37,17 @@ class Go_to_Start_Position(smach.State):
         
     def execute(self, userdata):
         rospy.loginfo('executing Go to Start position...')
+        global limb
+        global traj
+        global limb_interface
         current_angles = [limb_interface.joint_angle(joint) for joint in limb_interface.joint_names()]
         starting_joint_angles = {'right_w0': -0.6699952259595108,
-                             'right_w1': 1.030009435085784,
-                             'right_w2': 0.4999997247485215,
-                             'right_e0': -0.189968899785275,
-                             'right_e1': 1.9400238130755056,
-                             'right_s0': 0.08000397926829805,
-                             'right_s1': -0.9999781166910306}
+                                 'right_w1': 1.030009435085784,
+                                 'right_w2': 0.4999997247485215,
+                                 'right_e0': -0.189968899785275,
+                                 'right_e1': 1.9400238130755056,
+                                 'right_s0': 0.08000397926829805,
+                                 'right_s1': -0.9999781166910306}
         limb_names = ['right_s0', 'right_s1', 'right_e0', 'right_e1', 'right_w0', 'right_w1', 'right_w2']
         starting_joint_order_angles = [starting_joint_angles[joint] for joint in limb_names]
         traj.clear('right')
@@ -49,7 +55,7 @@ class Go_to_Start_Position(smach.State):
         traj.add_point(starting_joint_order_angles, 5.0)
         traj.start()
         traj.wait(10.0)
-        gripper_move_client(False)
+        traj.gripper_open()
         return 'Succeed'
         
 class Setting_Start_and_End_Pose(smach.State):
@@ -58,6 +64,10 @@ class Setting_Start_and_End_Pose(smach.State):
                              outcomes=['Succeed'],
                              output_keys=['pick_object_pose', 'place_object_pose'])
     def execute(self, userdata):
+        global limb
+        global traj
+        global limb_interface
+        
         rospy.loginfo('executing Setting_Start_and_End_Pose... ')
         self.pick_object_pose = Pose()
         self.place_object_pose = Pose()
@@ -93,11 +103,17 @@ class Add_Box_Gazebo_Model(smach.State):
                              input_keys=['pick_object_pose'])
         
     def execute(self, userdata):
-        pick_and_place.delete_gazebo_models()
-        add_gazebo_model_client(_model_name="box_female",
-                                _model_pose=Pose(position=Point(x=userdata.pick_object_pose.position.x, y=userdata.pick_object_pose.position.y, z=-0.115),
-                                                 orientation=Quaternion(x=0,y=0,z=0,w=1)),
-                                _model_reference_frame="base")
+        global limb
+        global traj
+        global limb_interface
+        
+        srv_action_client.delete_gazebo_models()
+        srv_action_client.load_gazebo_models(model_name="box_female",
+                           model_pose=Pose(position=Point(x=userdata.pick_object_pose.position.x,
+                                                          y=userdata.pick_object_pose.position.y,
+                                                          z=-0.115),
+                                           orientation=Quaternion(x=0,y=0,z=0,w=1)),
+                           model_reference_frame="base")
         return 'Succeed'
 
 class Go_to_Pick_Position(smach.State):
@@ -107,6 +123,10 @@ class Go_to_Pick_Position(smach.State):
                              input_keys=['pick_object_pose','hover_distance'])
         
     def execute(self, userdata):
+        global limb
+        global traj
+        global limb_interface
+        
         current_angles = [limb_interface.joint_angle(joint) for joint in limb_interface.joint_names()]
         pick_object_pose = copy.deepcopy(userdata.pick_object_pose)
         hover_pick_object_pose = copy.deepcopy(pick_object_pose)
@@ -119,7 +139,7 @@ class Go_to_Pick_Position(smach.State):
         traj.add_point(pick_angles, 10.0)
         traj.start()
         traj.wait(15.0)
-        gripper_move_client(True)
+        traj.gripper_close()
         rospy.sleep(1)
         return 'Succeed'
 
@@ -130,6 +150,10 @@ class Go_to_Place_Position(smach.State):
                              input_keys=['pick_object_pose','place_object_pose','hover_distance'])
         
     def execute(self, userdata):
+        global limb
+        global traj
+        global limb_interface
+        
         current_angles = [limb_interface.joint_angle(joint) for joint in limb_interface.joint_names()]
         pick_object_pose = copy.deepcopy(userdata.pick_object_pose)
         hover_pick_object_pose = copy.deepcopy(userdata.pick_object_pose)
@@ -148,31 +172,21 @@ class Go_to_Place_Position(smach.State):
         traj.add_point(place_angles, 15.0)
         traj.start()
         traj.wait(20.0)
-        gripper_move_client(False)
+        traj.gripper_open()
         return 'Succeed'
         
 def shutdown():
+    global limb
+    global traj
+    global lintimb_erface
     rospy.loginfo("Stopping the node...")
-    pick_and_place.delete_gazebo_models()
+    srv_action_client.delete_gazebo_models()
     traj.clear('right')
     traj.stop()
 
         
 def main():
-    """RSDK Inverse Kinematics Pick and Place Example
-
-    A Pick and Place example using the Rethink Inverse Kinematics
-    Service which returns the joint angles a requested Cartesian Pose.
-    This ROS Service client is used to request both pick and place
-    poses in the /base frame of the robot.
-
-    Note: This is a highly scripted and tuned demo. The object location
-    is "known" and movement is done completely open loop. It is expected
-    behavior that Baxter will eventually mis-pick or drop the block. You
-    can improve on this demo by adding perception and feedback to close
-    the loop.
-    """
-    rospy.init_node("pick_n_place_client")
+    rospy.init_node("pick_n_place_joint_trajectory")
     rospy.on_shutdown(shutdown)
     rospy.wait_for_message("/robot/sim/started", Empty)
     ipdb.set_trace()
@@ -185,7 +199,8 @@ def main():
 
     global traj
     global limb_interface
-
+    global limb
+    
     limb = 'right'
     traj = srv_action_client.Trajectory(limb)
     limb_interface = baxter_interface.limb.Limb(limb)
