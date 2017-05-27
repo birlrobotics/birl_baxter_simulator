@@ -10,8 +10,11 @@ import ipdb
 
 import rospy
 from std_msgs.msg import (
-    Empty
+    Empty,
+    Header
 )
+
+import copy
 
 from baxter_core_msgs.msg import EndpointState
 from sensor_msgs.msg import JointState
@@ -22,7 +25,7 @@ from birl_sim_examples.srv import (
     State_SwitchResponse
 )
 
-
+my_header = Header()
 
 def callback_endpoint_state(endpoint_state):
     global tag_multimodal
@@ -34,7 +37,9 @@ def callback_joint_state(joint_state):
 
 def callback_wrench_stamped(wrench_stamped):
     global tag_multimodal
+    global my_header
     tag_multimodal.wrench_stamped = wrench_stamped
+    my_header = copy.deepcopy(wrench_stamped.header)
 
     
 def state_switch_handle(req):
@@ -57,6 +62,7 @@ def main():
     #ipdb.set_trace()
     global hmm_state
     global tag_multimodal
+    global my_header
     tag_multimodal = Tag_MultiModal()
     hmm_state = 0
     publishing_rate = 100
@@ -81,6 +87,7 @@ def main():
     
     while not rospy.is_shutdown():
         tag_multimodal.tag = hmm_state
+        tag_multimodal.header = copy.deepcopy(my_header)
         pub.publish(tag_multimodal)
         r.sleep()
 

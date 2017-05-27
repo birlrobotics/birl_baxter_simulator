@@ -99,41 +99,34 @@ class HMMThread(threading.Thread):
         #preprocessing_normalize = False
         #data_feature = 6
 
-        success_path = "/home/ben/ML_data/REAL_BAXTER_ONE_Pick_n_Place/Sucess"
+        success_path = "/home/ben/ML_data/REAL_BAXTER_ONE_Pick_n_Place/Success"
+
+        model_save_path = "/home/ben/ML_data/REAL_BAXTER_ONE_Pick_n_Place/train_model"
         
         #threshold_constant = 10
 
         #########--- load the success Data Index And Label String----###################
         path_index_name = ["01","02","03","04","05","06","07","08","09","10"]
 
-        model_decision_list = joblib.load(success_path+"/model_decision/best_model_trail.pkl")
 
-        self.model_1 = joblib.load(success_path+'/'+path_index_name[model_decision_list[0]]+'/model/model_s1.pkl')
-        self.model_2 = joblib.load(success_path+'/'+path_index_name[model_decision_list[1]]+'/model/model_s2.pkl')
-        self.model_3 = joblib.load(success_path+'/'+path_index_name[model_decision_list[2]]+'/model/model_s3.pkl')
-        self.model_4 = joblib.load(success_path+'/'+path_index_name[model_decision_list[3]]+'/model/model_s4.pkl')
-        self.model_5 = joblib.load(success_path+'/'+path_index_name[model_decision_list[4]]+'/model/model_s5.pkl')
-        self.expected_log_1 = joblib.load(success_path+'/'+path_index_name[model_decision_list[0]]+'/model/s1_mean.pkl')
-        self.expected_log_2 = joblib.load(success_path+'/'+path_index_name[model_decision_list[1]]+'/model/s2_mean.pkl')
-        self.expected_log_3 = joblib.load(success_path+'/'+path_index_name[model_decision_list[2]]+'/model/s3_mean.pkl')
-        self.expected_log_4 = joblib.load(success_path+'/'+path_index_name[model_decision_list[3]]+'/model/s4_mean.pkl')
-        self.expected_log_5 = joblib.load(success_path+'/'+path_index_name[model_decision_list[4]]+'/model/s5_mean.pkl')
-        self.threshold_1 = joblib.load(success_path+'/'+path_index_name[model_decision_list[0]]+'/model/s1_theshold.pkl')
-        self.threshold_2 = joblib.load(success_path+'/'+path_index_name[model_decision_list[1]]+'/model/s2_theshold.pkl')
-        self.threshold_3 = joblib.load(success_path+'/'+path_index_name[model_decision_list[2]]+'/model/s3_theshold.pkl')
-        self.threshold_4 = joblib.load(success_path+'/'+path_index_name[model_decision_list[3]]+'/model/s4_theshold.pkl')
-        self.threshold_5 = joblib.load(success_path+'/'+path_index_name[model_decision_list[4]]+'/model/s5_theshold.pkl')
+        self.model_1 = joblib.load(model_save_path+'/model_decision/best_model.pkl')[0]
+        self.model_2 = joblib.load(model_save_path+'/model_decision/best_model.pkl')[1]
+        self.model_3 = joblib.load(model_save_path+'/model_decision/best_model.pkl')[2]
+        self.model_4 = joblib.load(model_save_path+'/model_decision/best_model.pkl')[3]
+        self.model_5 = joblib.load(model_save_path+'/model_decision/best_model.pkl')[4]
+        self.expected_log_1 = joblib.load(model_save_path+'/model_decision/expected_log.pkl')[0]
+        self.expected_log_2 = joblib.load(model_save_path+'/model_decision/expected_log.pkl')[1]
+        self.expected_log_3 = joblib.load(model_save_path+'/model_decision/expected_log.pkl')[2]
+        self.expected_log_4 = joblib.load(model_save_path+'/model_decision/expected_log.pkl')[3]
+        self.expected_log_5 = joblib.load(model_save_path+'/model_decision/expected_log.pkl')[4]
+        self.threshold_1 = joblib.load(model_save_path+'/model_decision/threshold.pkl')[0].T
+        self.threshold_2 = joblib.load(model_save_path+'/model_decision/threshold.pkl')[1].T
+        self.threshold_3 = joblib.load(model_save_path+'/model_decision/threshold.pkl')[2].T
+        self.threshold_4 = joblib.load(model_save_path+'/model_decision/threshold.pkl')[3].T
+        self.threshold_5 = joblib.load(model_save_path+'/model_decision/threshold.pkl')[4].T
+    
 
-        self.threshold_1 = self.threshold_1.values.T.tolist()
-        self.threshold_2 = self.threshold_2.values.T.tolist()
-        self.threshold_3 = self.threshold_3.values.T.tolist()
-        self.threshold_4 = self.threshold_4.values.T.tolist()
-        self.threshold_5 = self.threshold_5.values.T.tolist()
-        self.threshold_1 = self.threshold_1[0]
-        self.threshold_2 = self.threshold_2[0]
-        self.threshold_3 = self.threshold_3[0]
-        self.threshold_4 = self.threshold_4[0]
-        self.threshold_5 = self.threshold_5[0]
+
 
     def run(self):
         #ipdb.set_trace()

@@ -30,7 +30,7 @@ class Go_to_Start_Position(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['Succeed'])
-        self.state = 1
+        self.state = 0
         
     def execute(self, userdata):
         rospy.loginfo('executing Go to Start position...')
@@ -48,15 +48,19 @@ class Setting_Start_and_End_Pose(smach.State):
         self.pick_object_pose = Pose()
         self.place_object_pose = Pose()
         
-        self.pick_object_pose.position.x = 0.69705324921
-        self.pick_object_pose.position.y = -0.265050052648
-        self.pick_object_pose.position.z = -0.0307151177304
+        self.pick_object_pose.position.x = 0.78370181675
+        self.pick_object_pose.position.y = -0.296405272911
+        self.pick_object_pose.position.z = -0.03448412355
+
+
+
+
         #RPY = 0 pi 0
         self.pick_object_pose.orientation = Quaternion(
-            x=-0.0723329447856,
-            y=0.997269243084,
-            z=-0.0138894199745,
-            w=0.00539313554179)
+            x= -0.0600070131966,
+            y= 0.997894836048,
+            z=  0.0199740264787,
+            w=  0.0143559333636)
 
       
         self.place_object_pose.position.x = self.pick_object_pose.position.x
@@ -88,7 +92,7 @@ class Go_to_Pick_Hover_Position(smach.State):
         smach.State.__init__(self,
                              outcomes=['Succeed','IK_Fail','Time_Out'],
                              input_keys=['pick_object_pose','hover_distance'])
-        self.state = 2
+        self.state = 1
         
     def execute(self, userdata):
         self.pick_object_pose = copy.deepcopy(userdata.pick_object_pose)
@@ -108,7 +112,7 @@ class Pick_Object(smach.State):
         smach.State.__init__(self,
                              outcomes=['Succeed','IK_Fail', 'Time_Out'],
                              input_keys=['pick_object_pose','hover_distance'])
-        self.state = 3
+        self.state = 2
         
     def execute(self, userdata):
         gripper_move_client(is_move_close = False)
@@ -131,7 +135,7 @@ class Go_to_Place_Hover_Position(smach.State):
         smach.State.__init__(self,
                              outcomes=['Succeed','IK_Fail','Time_Out'],
                              input_keys=['place_object_pose','hover_distance'])
-        self.state = 4
+        self.state = 3
         
     def execute(self, userdata):
         self.place_object_pose = copy.deepcopy(userdata.place_object_pose)
@@ -151,7 +155,7 @@ class Place_Object(smach.State):
         smach.State.__init__(self,
                              outcomes=['Succeed','IK_Fail','Time_Out'],
                              input_keys=['place_object_pose','hover_distance'])
-        self.state = 5
+        self.state = 4
         
     def execute(self, userdata):
         self.place_object_pose = copy.deepcopy(userdata.place_object_pose)
