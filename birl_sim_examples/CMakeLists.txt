@@ -22,6 +22,7 @@ add_message_files(DIRECTORY msg FILES
   Tag_Wrench.msg
   Tag_MultiModal.msg
   Hmm_Log.msg
+  Hmm_Classification.msg
 )
 
 # Generate services in the 'srv' folder

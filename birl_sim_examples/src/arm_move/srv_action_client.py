@@ -15,6 +15,7 @@ import struct
 import actionlib
 
 from arm_move import pick_and_place
+from birl_sim_examples.srv import *
 
 from control_msgs.msg import (
     FollowJointTrajectoryAction,
@@ -102,6 +103,14 @@ class Trajectory(object):
 
     def result(self):
         return self._client.get_result()
+
+    def add_pose_point(self,pose,time):
+        angles = self.ik_request(pose)
+        if not angles:
+            return 0
+        else:
+            self.add_point(angles,time)
+            return 1
 
     def clear(self, limb):
         self._goal = FollowJointTrajectoryGoal()
@@ -205,3 +214,16 @@ def load_gazebo_models(model_name,
             rospy.logerr("Spawn URDF service call failed: {0}".format(e))
             return False
     return True
+
+def hmm_state_switch_client(state):
+    rospy.wait_for_service('hmm_state_switch')
+    try:
+        hmm_state_switch_proxy = rospy.ServiceProxy('hmm_state_switch',
+                                                    State_Switch)
+        req = State_SwitchRequest()
+        req.state = state
+        resp = hmm_state_switch_proxy(req)
+        if resp.finish.data:
+            print "Hmm State switch to %d succesfully" %state
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e

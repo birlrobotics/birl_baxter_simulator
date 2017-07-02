@@ -27,7 +27,7 @@ from sensor_msgs.msg import JointState
 from geometry_msgs.msg import WrenchStamped
 from birl_sim_examples.msg import (
     Tag_MultiModal,
-    Hmm_Log
+    Hmm_Classification
 )
 from birl_sim_examples.srv import (
     State_Switch,
@@ -44,6 +44,12 @@ data_index = 0
 df = pd.DataFrame()
 header = Header()
 
+success_path = "/home/ben/ML_data/REAL_BAXTER_PICK_N_PLACE_5_18/success"
+
+model_save_path = "/home/ben/ML_data/REAL_BAXTER_PICK_N_PLACE_5_18/model/wrench"
+
+figure_save_path = "/home/ben/ML_data/REAL_BAXTER_PICK_N_PLACE_5_18/figure/wrench"
+
 class ROSThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)     
@@ -57,6 +63,7 @@ class ROSThread(threading.Thread):
         global header
         hmm_state = data.tag
         header = data.wrench_stamped.header
+
         df_append_data = {'.wrench_stamped.wrench.force.x':[data.wrench_stamped.wrench.force.x],
                           '.wrench_stamped.wrench.force.y':[data.wrench_stamped.wrench.force.y],
                           '.wrench_stamped.wrench.force.z':[data.wrench_stamped.wrench.force.z],
@@ -70,7 +77,7 @@ class ROSThread(threading.Thread):
                                                           '.wrench_stamped.wrench.torque.x',
                                                           '.wrench_stamped.wrench.torque.y',
                                                           '.wrench_stamped.wrench.torque.z',
-                                                          '.tag'])
+                                                          '.tag'])   
         df = df.append(df_append, ignore_index = True)
         df = df.fillna(method='ffill')
         data_arr = df.values[df.values[:,-1] ==hmm_state]
@@ -99,31 +106,18 @@ class HMMThread(threading.Thread):
         #preprocessing_normalize = False
         #data_feature = 6
 
-        success_path = "/home/ben/ML_data/REAL_BAXTER_ONE_Pick_n_Place/Success"
-
-        model_save_path = "/home/ben/ML_data/REAL_BAXTER_ONE_Pick_n_Place/train_model"
-        
-        #threshold_constant = 10
-
-        #########--- load the success Data Index And Label String----###################
-        path_index_name = ["01","02","03","04","05","06","07","08","09","10"]
-
-
-        self.model_1 = joblib.load(model_save_path+'/model_decision/best_model.pkl')[0]
-        self.model_2 = joblib.load(model_save_path+'/model_decision/best_model.pkl')[1]
-        self.model_3 = joblib.load(model_save_path+'/model_decision/best_model.pkl')[2]
-        self.model_4 = joblib.load(model_save_path+'/model_decision/best_model.pkl')[3]
-        self.model_5 = joblib.load(model_save_path+'/model_decision/best_model.pkl')[4]
-        self.expected_log_1 = joblib.load(model_save_path+'/model_decision/expected_log.pkl')[0]
-        self.expected_log_2 = joblib.load(model_save_path+'/model_decision/expected_log.pkl')[1]
-        self.expected_log_3 = joblib.load(model_save_path+'/model_decision/expected_log.pkl')[2]
-        self.expected_log_4 = joblib.load(model_save_path+'/model_decision/expected_log.pkl')[3]
-        self.expected_log_5 = joblib.load(model_save_path+'/model_decision/expected_log.pkl')[4]
-        self.threshold_1 = joblib.load(model_save_path+'/model_decision/threshold.pkl')[0].T
-        self.threshold_2 = joblib.load(model_save_path+'/model_decision/threshold.pkl')[1].T
-        self.threshold_3 = joblib.load(model_save_path+'/model_decision/threshold.pkl')[2].T
-        self.threshold_4 = joblib.load(model_save_path+'/model_decision/threshold.pkl')[3].T
-        self.threshold_5 = joblib.load(model_save_path+'/model_decision/threshold.pkl')[4].T
+        self.model_1 = joblib.load(model_save_path+"/multisequence_model/model_s1.pkl")
+        self.model_2 = joblib.load(model_save_path+"/multisequence_model/model_s2.pkl")
+        self.model_3 = joblib.load(model_save_path+"/multisequence_model/model_s3.pkl")
+        self.model_4 = joblib.load(model_save_path+"/multisequence_model/model_s4.pkl")
+        self.expected_log_1 = joblib.load(model_save_path+'/multisequence_model/expected_log.pkl')[0]
+        self.expected_log_2 = joblib.load(model_save_path+'/multisequence_model/expected_log.pkl')[1]
+        self.expected_log_3 = joblib.load(model_save_path+'/multisequence_model/expected_log.pkl')[2]
+        self.expected_log_4 = joblib.load(model_save_path+'/multisequence_model/expected_log.pkl')[3]
+        self.threshold_1 = joblib.load(model_save_path+'/multisequence_model/threshold.pkl')[0]
+        self.threshold_2 = joblib.load(model_save_path+'/multisequence_model/threshold.pkl')[1]
+        self.threshold_3 = joblib.load(model_save_path+'/multisequence_model/threshold.pkl')[2]
+        self.threshold_4 = joblib.load(model_save_path+'/multisequence_model/threshold.pkl')[3]
     
 
 
@@ -134,51 +128,36 @@ class HMMThread(threading.Thread):
         global hmm_state
         global data_index
         global header
-        hmm_log = Hmm_Log()
+        hmm_classification = Hmm_Classification()
         publishing_rate = 50
         r = rospy.Rate(publishing_rate)
-        pub = rospy.Publisher("/hmm_online_result", Hmm_Log, queue_size=10)
+        pub = rospy.Publisher("/hmm_online_classifcation", Hmm_Classification, queue_size=10)
         while not rospy.is_shutdown():
-            if hmm_state == 1:
+            if not hmm_state == 0:
                 try:
-                    hmm_log.current_log.data = self.model_1.score(data_arr)
-                    hmm_log.expected_log.data = self.expected_log_1[data_index-1]
-                    hmm_log.threshold.data = self.threshold_1[data_index-1]
+                    hmm_classification.state_1.data = self.model_1.score(data_arr)              
                     print "%d"%(data_index)
                 except:
                     rospy.logerr("the data shape is %d ",data_index)
-            elif hmm_state == 2:
+
                 try:
-                    hmm_log.current_log.data = self.model_2.score(data_arr)
-                    hmm_log.expected_log.data = self.expected_log_2[data_index-1]
-                    hmm_log.threshold.data = self.threshold_2[data_index-1]
+                    hmm_classification.state_2.data = self.model_2.score(data_arr)              
                     print "%d"%(data_index)
                 except:
-                    rospy.logerr("the data shape is %d",data_index)
-            elif hmm_state == 3:
+                    rospy.logerr("the data shape is %d ",data_index)
                 try:
-                    hmm_log.current_log.data = self.model_3.score(data_arr)
-                    hmm_log.expected_log.data = self.expected_log_3[data_index-1]
-                    hmm_log.threshold.data = self.threshold_3[data_index-1]
+                    hmm_classification.state_3.data = self.model_3.score(data_arr)              
                     print "%d"%(data_index)
                 except:
-                    rospy.logerr("the data shape is %d",data_index)
-            elif hmm_state == 4:
+                    rospy.logerr("the data shape is %d ",data_index)
                 try:
-                    hmm_log.current_log.data = self.model_4.score(data_arr)
-                    hmm_log.expected_log.data = self.expected_log_4[data_index-1]
-                    hmm_log.threshold.data = self.threshold_4[data_index-1]
+                    hmm_classification.state_4.data = self.model_4.score(data_arr)              
+                    print "%d"%(data_index)
                 except:
-                    rospy.logerr("the data shape is %d",data_index)
-            elif hmm_state == 5:
-                try:
-                    hmm_log.current_log.data = self.model_5.score(data_arr)
-                    hmm_log.expected_log.data = self.expected_log_5[data_index-1]
-                    hmm_log.threshold.data = self.threshold_5[data_index-1]
-                except:
-                    rospy.logerr("the data shape is %d",data_index)
-            hmm_log.header = header
-            pub.publish(hmm_log)
+                    rospy.logerr("the data shape is %d ",data_index)
+
+            hmm_classification.header = header
+            pub.publish(hmm_classification)
             r.sleep()
 
         return 0
