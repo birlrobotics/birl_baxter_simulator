@@ -99,7 +99,7 @@ class Trajectory(object):
         self._client.cancel_goal()
 
     def wait(self, timeout=15.0):
-        self._client.wait_for_result(timeout=rospy.Duration(timeout))
+        return self._client.wait_for_result(timeout=rospy.Duration(timeout))
 
     def result(self):
         return self._client.get_result()
