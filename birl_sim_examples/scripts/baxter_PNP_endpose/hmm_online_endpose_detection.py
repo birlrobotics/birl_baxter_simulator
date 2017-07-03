@@ -45,11 +45,13 @@ data_index = 0
 df = pd.DataFrame()
 header = Header()
 
-success_path = "/home/ben/ML_data/REAL_BAXTER_PICK_N_PLACE_6_1/success"
+base_path = '/home/sklaw/Desktop/experiment/birl/data_for_or_from_HMM/ML_DATA_BEN'
 
-model_save_path = "/home/ben/ML_data/REAL_BAXTER_PICK_N_PLACE_6_1/model/endpoint_pose"
+success_path = base_path+"/ML_data/REAL_BAXTER_PICK_N_PLACE_6_1/success"
 
-figure_save_path = "/home/ben/ML_data/REAL_BAXTER_PICK_N_PLACE_6_1/figure/endpoint_pose"
+model_save_path = base_path+"/ML_data/REAL_BAXTER_PICK_N_PLACE_6_1/model/endpoint_pose"
+
+figure_save_path = base_path+"/ML_data/REAL_BAXTER_PICK_N_PLACE_6_1/figure/endpoint_pose"
 
 class ROSThread(threading.Thread):
     def __init__(self):
