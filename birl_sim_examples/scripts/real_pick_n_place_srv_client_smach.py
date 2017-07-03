@@ -35,6 +35,9 @@ class Go_to_Start_Position(smach.State):
     def execute(self, userdata):
         rospy.loginfo('executing Go to Start position...')
         hmm_state_switch_client(self.state)
+
+        # call a service to generate the motion
+        # the actual hardcoded start position data is in real_pick_n_place_srv_server.py
         go_to_start_position_client()
         return 'Succeed'
         

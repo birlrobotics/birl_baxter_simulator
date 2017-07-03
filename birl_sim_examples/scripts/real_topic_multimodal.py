@@ -1,6 +1,18 @@
 #!/usr/bin/env python
 """
 Baxter RSDK Inverse Kinematics Pick and Place Demo
+
+This script is about data collection.
+
+Will do 2 things here:
+
+1. combine 3 channels of data sources into one: endpoints, joint states and wrench -> tag_multimodal
+2. run a service that will change a global variable called HMM_state in this script on request.
+1.1 append HMM_state to tag_multimodal publication
+
+
+
+
 """
 import argparse
 import struct
