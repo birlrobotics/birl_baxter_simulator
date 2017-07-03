@@ -68,7 +68,7 @@ class ROSThread(threading.Thread):
         hmm_state = data.tag
         if not hmm_state==hmm_previous_state:
             df = pd.DataFrame()
-        header = data.wrench_stamped.header
+        header = data.endpoint_state.header
         df_append_data = {'.endpoint_state.pose.position.x':[data.endpoint_state.pose.position.x],
                           '.endpoint_state.pose.position.y':[data.endpoint_state.pose.position.y],
                           '.endpoint_state.pose.position.z':[data.endpoint_state.pose.position.z],

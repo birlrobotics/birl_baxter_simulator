@@ -29,7 +29,9 @@ my_header = Header()
 
 def callback_endpoint_state(endpoint_state):
     global tag_multimodal
+    global my_header
     tag_multimodal.endpoint_state = endpoint_state
+    my_header = copy.deepcopy(endpoint_state.header)
 
 def callback_joint_state(joint_state):
     global tag_multimodal
@@ -37,9 +39,8 @@ def callback_joint_state(joint_state):
 
 def callback_wrench_stamped(wrench_stamped):
     global tag_multimodal
-    global my_header
     tag_multimodal.wrench_stamped = wrench_stamped
-    my_header = copy.deepcopy(wrench_stamped.header)
+
 
     
 def state_switch_handle(req):
