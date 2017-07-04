@@ -223,7 +223,6 @@ class Go_to_Place_Hover_Position(smach.State):
 
 
         current_angles = [limb_interface.joint_angle(joint) for joint in limb_interface.joint_names()]
-        #place_object_pose = copy.deepcopy(userdata.place_object_pose)
         hover_place_object_pose = hardcoded_data.hover_place_object_pose
         traj.clear('right')
         traj.add_point(current_angles, 0.0)
@@ -287,23 +286,54 @@ class Go_to_Place_Position(smach.State):
         return 'Succeed'    
     
 class Recovery(smach.State):
-    def __init__(self):
-        smach.State.__init__(self,
-                             outcomes=['RecoveryFailed'])
+    def __init__(self, outcomes):
+        smach.State.__init__(self, outcomes)
         
     def execute(self, userdata):
+        global event_flag
+        global execution_history
+        global sm
+
         rospy.loginfo("Enter Recovery State...")
-        rospy.loginfo("Hit any key to exit Recovery State...")
-        raw_input()
-        return 'RecoveryFailed'
+        rospy.loginfo("Block anomlay detection")
+        event_flag = -1
+
+        history_to_reexecute = None 
+        while True:
+            if len(execution_history) == 0:
+                rospy.loginfo("no execution_history found")
+            elif execution_history[-1]['depend_on_prev_states']:
+                execution_history.pop()
+            else:
+                history_to_reexecute = execution_history[-1]
+                break
+
+        if history_to_reexecute is None:
+            return 'RecoveryFailed'
+
+        state_name = history_to_reexecute['state_name']
+
+        state_instance = sm._states[state_name]
+        state_transitions = sm._transitions[state_name]
+        rospy.loginfo("Gonna call %s's execute with empty userdata"%(state_name,))
+        state_outcome = state_instance.execute({}) 
+        next_state = state_transitions[state_outcome]
+        rospy.loginfo('Gonna reenter %s'%(next_state,))
+
+        rospy.loginfo("Unblock anomlay detection")
+        event_flag = 1
+        return 'Reenter_'+next_state
 
 def callback_hmm(msg):
     global event_flag
-    event_flag = msg.event_flag  
+    # if event_flag is not blocked by Recovery state
+    if event_flag != -1:
+        event_flag = msg.event_flag  
 
 def callback_manual_anomaly_signal(msg):
     global event_flag
-    event_flag = 0
+    if event_flag != -1:
+        event_flag = 0
         
 def shutdown():
     global limb
@@ -318,6 +348,7 @@ def shutdown():
 def main():
     global mode_no_state_trainsition_report
     global mode_no_anomaly_detection
+    global sm
 
 
     rospy.init_node("pick_n_place_joint_trajectory")
@@ -386,14 +417,22 @@ def main():
             }
         )
 
+        # build Recovery states automatically
+        recovery_outcomes = ['RecoveryFailed']
+        recovery_state_transitions = {
+            'RecoveryFailed':'TaskFailed'
+        }
+        for added_state in sm._states:
+            recovery_outcomes.append('Reenter_'+added_state)
+            recovery_state_transitions['Reenter_'+added_state] = added_state
+
         smach.StateMachine.add(
 			'Recovery',
-			Recovery(),
-            transitions={
-                'RecoveryFailed':'TaskFailed'
-            }
+			Recovery(outcomes=recovery_outcomes),
+            transitions=recovery_state_transitions
         )
-                               
+    
+                           
     rospy.loginfo('Done...')
 
     rospy.loginfo('Bring up smach introspection server...')
@@ -418,6 +457,7 @@ if __name__ == '__main__':
     mode_no_state_trainsition_report = True
     mode_no_anomaly_detection = False 
     mode_use_manual_anomaly_signal = True
+    sm = None
     sys.exit(main())
 
 
