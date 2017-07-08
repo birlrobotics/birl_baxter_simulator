@@ -293,6 +293,7 @@ class Recovery(smach.State):
         global event_flag
         global execution_history
         global sm
+        global mode_no_state_trainsition_report
 
         rospy.loginfo("Enter Recovery State...")
         rospy.loginfo("Block anomlay detection")
@@ -316,7 +317,14 @@ class Recovery(smach.State):
         state_instance = sm._states[state_name]
         state_transitions = sm._transitions[state_name]
         rospy.loginfo("Gonna call %s's execute with empty userdata"%(state_name,))
-        state_outcome = state_instance.execute({}) 
+        if not mode_no_state_trainsition_report:
+            hmm_state_switch_client(0)
+            mode_no_state_trainsition_report = True
+            state_outcome = state_instance.execute({}) 
+            mode_no_state_trainsition_report = False
+        else:
+            state_outcome = state_instance.execute({}) 
+            
         next_state = state_transitions[state_outcome]
         rospy.loginfo('Gonna reenter %s'%(next_state,))
 
@@ -454,9 +462,9 @@ def main():
     
 
 if __name__ == '__main__':
-    mode_no_state_trainsition_report = True
-    mode_no_anomaly_detection = False 
-    mode_use_manual_anomaly_signal = True
+    mode_no_state_trainsition_report = True 
+    mode_no_anomaly_detection = True 
+    mode_use_manual_anomaly_signal = False 
     sm = None
     sys.exit(main())
 
