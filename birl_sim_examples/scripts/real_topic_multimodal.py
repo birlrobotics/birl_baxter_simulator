@@ -86,17 +86,13 @@ def main():
     # set up Subscribers
     rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, callback_endpoint_state)
     rospy.Subscriber("/robot/joint_states", JointState, callback_joint_state)
-    rospy.Subscriber("/wrench/filter", WrenchStamped, callback_wrench_stamped)
+    rospy.Subscriber("/robotiq_force_torque_wrench", WrenchStamped, callback_wrench_stamped)
     # set up publisher
     pub = rospy.Publisher("/tag_multimodal",Tag_MultiModal, queue_size=10)
     # set up service
     state_switch = rospy.Service('hmm_state_switch', State_Switch, state_switch_handle)
     # set up the publishing rate
     r = rospy.Rate(publishing_rate)
-    print "Topic /tag_multimodal publish rate: %d hz"%publishing_rate
-    print "Topic /robot/limb/right/endpoint_state publish rate: 100hz"
-    print "Topic /robot/joint_states publish rate: 120hz"
-    print "Topic /wrench/filter publish rate: 200hz"
     
     while not rospy.is_shutdown():
         tag_multimodal.tag = hmm_state
