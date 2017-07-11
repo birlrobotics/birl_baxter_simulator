@@ -35,13 +35,37 @@ from geometry_msgs.msg import (
 )
 
 import time 
+import os
 
 import hardcoded_data
 
+import cv2
+import cv_bridge
+
+from sensor_msgs.msg import (
+    Image,
+)
+
+import numpy as np
+
+import ipdb
 
 event_flag = 1
 execution_history = []
 
+def send_image(path):
+    """
+    Send the image located at the specified path to the head
+    display on Baxter.
+
+    @param path: path to the image file to load and send
+    """
+    img = cv2.imread(path)
+    msg = cv_bridge.CvBridge().cv2_to_imgmsg(img, encoding="bgr8")
+    pub = rospy.Publisher('/robot/xdisplay', Image, latch=True, queue_size=1)
+    pub.publish(msg)
+    # Sleep to allow for image to be published.
+    rospy.sleep(1)
 
 
 ## @brief wait for trajectory goal to be finished, perform preemptive anomaly detection in the meantime. 
@@ -299,6 +323,8 @@ class Recovery(smach.State):
         rospy.loginfo("Block anomlay detection")
         event_flag = -1
 
+        send_image(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'red.jpg'))
+
         history_to_reexecute = None 
         while True:
             if len(execution_history) == 0:
@@ -327,6 +353,9 @@ class Recovery(smach.State):
             
         next_state = state_transitions[state_outcome]
         rospy.loginfo('Gonna reenter %s'%(next_state,))
+
+
+        send_image(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'green.jpg'))
 
         rospy.loginfo("Unblock anomlay detection")
         event_flag = 1
@@ -443,6 +472,10 @@ def main():
                            
     rospy.loginfo('Done...')
 
+
+    send_image(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'green.jpg'))
+
+
     rospy.loginfo('Bring up smach introspection server...')
     sis = smach_ros.IntrospectionServer('MY_SERVER', sm, '/SM_ROOT')
     sis.start()
@@ -462,7 +495,7 @@ def main():
     
 
 if __name__ == '__main__':
-    mode_no_state_trainsition_report = True 
+    mode_no_state_trainsition_report = False
     mode_no_anomaly_detection = True 
     mode_use_manual_anomaly_signal = False 
     sm = None
