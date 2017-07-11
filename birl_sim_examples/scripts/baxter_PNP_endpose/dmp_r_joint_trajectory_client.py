@@ -108,11 +108,9 @@ class Trajectory(object):
     
     def gripper_open(self):
         self._gripper.open()
-        rospy.sleep(1.0)
 
     def gripper_close(self):
         self._gripper.close()
-        rospy.sleep(1.0)
     
     def _execute_gripper_commands(self):
         start_time = rospy.get_time() - self._trajectory_actual_offset.to_sec()

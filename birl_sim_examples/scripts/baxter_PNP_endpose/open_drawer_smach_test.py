@@ -8,6 +8,7 @@ prereqursite:
 """
 
 
+import baxter_interface
 from dmp.srv import *
 import sys
 import rospy
@@ -19,6 +20,11 @@ import config
 from std_msgs.msg import Empty
 import os
 from birl_sim_examples.srv import *
+
+import baxter_r_arm_dmp
+
+event_flag = 1
+execution_history = []
 
 def hmm_state_switch_client(state):
     rospy.wait_for_service('hmm_state_switch')
@@ -70,106 +76,176 @@ def wait_for_motion_and_detect_anomaly(traj_obj):
 
     return False
 
+## @brief record exec history
+## @param current_state_name string
+## @param current_userdata userdata passed into current state 
+## @param depend_on_prev_states True if current state's success depends on previous states 
+## @return None
+def write_exec_hist(state_instance, current_state_name, current_userdata, depend_on_prev_states):
+    import copy
+    global execution_history
+
+    saved_userdata = {}
+    for k in state_instance._input_keys:
+        saved_userdata[k] = copy.deepcopy(current_userdata[k])
+
+    execution_history.append(
+        {
+            "state_name": current_state_name,
+            "saved_userdata": saved_userdata,
+            "depend_on_prev_states": depend_on_prev_states
+        }
+    )
 
 class Go_to_start_position(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['Succeed', 'NeedRecovery'])
+        self.state = 1
         
     def execute(self, userdata):
-        rospy.loginfo('Executing Go_to_start_position...')
+        global limb_interface
+        global mode_no_state_trainsition_report
+        if not mode_no_state_trainsition_report:
+            hmm_state_switch_client(self.state)
+
+        write_exec_hist(self, "Go_to_start_position", userdata, False)        
+        current_angles = [limb_interface.joint_angle(joint) for joint in limb_interface.joint_names()]
+
+        baxter_r_arm_dmp.main(
+            config.recorded_go_to_start_position_path,
+            config.generalized_go_to_start_position_path,
+            current_angles) 
+
         global dmp0_traj
-        dmp0_traj.parse_file(config.go_to_start_position_path)
-        
-        rospy.loginfo('read recording file Go_to_start_position trajectory')
+        dmp0_traj.parse_file(config.generalized_go_to_start_position_path)
         dmp0_traj.start()        
-        rospy.loginfo('started')
-        rospy.loginfo("wait returns %s"%(dmp0_traj.wait(),))
-        rospy.loginfo('done wait')
-        dmp0_traj.stop()
-        rospy.loginfo('succeesfully run start_to_pick_trajectory')    
+        dmp0_traj.wait()
+
         return 'Succeed'
-
-
         
         
 class Go_to_gripper_position(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['Succeed', 'NeedRecovery'])
+        self.state = 2
         
     def execute(self, userdata):
-        rospy.loginfo('Executing Go_to_gripper_position......')
+        global limb_interface
+        global mode_no_state_trainsition_report
+        if not mode_no_state_trainsition_report:
+            hmm_state_switch_client(self.state)
+
+        write_exec_hist(self, "Go_to_gripper_position", userdata, False)        
+        current_angles = [limb_interface.joint_angle(joint) for joint in limb_interface.joint_names()]
+
+        baxter_r_arm_dmp.main(
+            config.recorded_go_to_gripper_position_path,
+            config.generalized_go_to_gripper_position_path,
+            current_angles) 
+
         global dmp1_traj
-        dmp1_traj.parse_file(config.go_to_gripper_position_path)
+        dmp1_traj.parse_file(config.generalized_go_to_gripper_position_path)
         dmp1_traj.start()
         dmp1_traj.wait()
-        rospy.loginfo('succeesfully run Go_to_gripper_position_trajectory')
+        dmp1_traj.gripper_close()
         return 'Succeed'
+
+
+
+
 
 class Go_back(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['Succeed', 'NeedRecovery'])
+        self.state = 3 
         
     def execute(self, userdata):
-        rospy.loginfo('executing Go_back..')
+        global limb_interface
+        global mode_no_state_trainsition_report
+        if not mode_no_state_trainsition_report:
+            hmm_state_switch_client(self.state)
+
+        write_exec_hist(self, "Go_back", userdata, False)        
+
+
+        current_angles = [limb_interface.joint_angle(joint) for joint in limb_interface.joint_names()]
+
+        baxter_r_arm_dmp.main(
+            config.recorded_go_back_path,
+            config.generalized_go_back_path,
+            current_angles) 
+
         global dmp2_traj
-        dmp2_traj.parse_file(config.go_back_path)
+        dmp2_traj.parse_file(config.generalized_go_back_path)
         dmp2_traj.start()
         dmp2_traj.wait()
+        dmp2_traj.gripper_open()
         return 'Succeed'
 
 class Go_forward(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['Succeed', 'NeedRecovery'])
+        self.state = 4
         
         
     def execute(self, userdata):
-        rospy.loginfo('executing Go_forward..')
+        global limb_interface
+        global mode_no_state_trainsition_report
+        if not mode_no_state_trainsition_report:
+            hmm_state_switch_client(self.state)
+
+        write_exec_hist(self, "Go_forward", userdata, False)        
+
+        current_angles = [limb_interface.joint_angle(joint) for joint in limb_interface.joint_names()]
+
+        baxter_r_arm_dmp.main(
+            config.recorded_go_forward_path,
+            config.generalized_go_forward_path,
+            current_angles) 
+
         global dmp3_traj
-        dmp3_traj.parse_file(config.go_forward_path)
+        dmp3_traj.parse_file(config.generalized_go_forward_path)
         dmp3_traj.start()
         dmp3_traj.wait()
         return 'Succeed'
+
+
+
+
 class Go_back_to_start_position(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['Succeed', 'NeedRecovery'])
+        self.state = 5 
         
     def execute(self, userdata):
-        rospy.loginfo('executing Go_back_to_start_position...')
+        global limb_interface
+        global mode_no_state_trainsition_report
+        if not mode_no_state_trainsition_report:
+            hmm_state_switch_client(self.state)
+
+        write_exec_hist(self, "Go_back_to_start_position", userdata, False)        
+
+        current_angles = [limb_interface.joint_angle(joint) for joint in limb_interface.joint_names()]
+
+        baxter_r_arm_dmp.main(
+            config.recorded_go_back_to_start_position_path,
+            config.generalized_go_back_to_start_position_path,
+            current_angles) 
+
         global dmp4_traj
-        dmp4_traj.parse_file(config.go_back_to_start_position_path)
+        dmp4_traj.parse_file(config.generalized_go_back_to_start_position_path)
         dmp4_traj.start()
         dmp4_traj.wait()       
         return 'Succeed'
 
-class Gripper_open(smach.State):
-    def __init__(self):
-        smach.State.__init__(self,
-                             outcomes=['Succeed', 'NeedRecovery'])
-        
-    def execute(self, userdata):
-        rospy.loginfo('executing  Open gripper...')
-        global dmp1_traj
-        dmp1_traj.gripper_open()
-        rospy.loginfo("gripper open")        
-        return 'Succeed'
 
 
-class Gripper_close(smach.State):
-    def __init__(self):
-        smach.State.__init__(self,
-                             outcomes=['Succeed', 'NeedRecovery'])
-        
-    def execute(self, userdata):
-        rospy.loginfo('executing  close gripper...')
-        global dmp1_traj
-        dmp1_traj.gripper_close()
-        rospy.loginfo("gripper close")        
-        return 'Succeed'
+
 
 class Recovery(smach.State):
     def __init__(self, outcomes):
@@ -240,6 +316,8 @@ def main():
     global mode_no_state_trainsition_report
     global mode_no_anomaly_detection
     global sm
+    global limb_interface
+
 
     global dmp0_traj
     global dmp1_traj
@@ -249,6 +327,10 @@ def main():
 
 
     rospy.init_node("open_drawer_joint_trajectory")
+
+    limb = 'right'
+    limb_interface = baxter_interface.limb.Limb(limb)
+
     if not mode_no_anomaly_detection:
         import std_msgs.msg
         if mode_use_manual_anomaly_signal:
@@ -283,31 +365,14 @@ def main():
             Go_to_gripper_position(),
             transitions={
                 'NeedRecovery': 'Recovery',
-                'Succeed':'Gripper_close'
-            }
-        )
-                               
-        smach.StateMachine.add(
-            'Gripper_close',
-            Gripper_close(),
-            transitions={
-                'NeedRecovery': 'Recovery',
                 'Succeed':'Go_back'
             }
         )
+                               
         
         smach.StateMachine.add(
             'Go_back',
             Go_back(),
-            transitions={
-                'NeedRecovery': 'Recovery',
-                'Succeed':'Gripper_open'
-            }
-        )
-        
-        smach.StateMachine.add(
-            'Gripper_open',
-            Gripper_open(),
             transitions={
                 'NeedRecovery': 'Recovery',
                 'Succeed':'Go_forward'
@@ -367,9 +432,9 @@ def main():
 
 
 if __name__ == '__main__':
-    mode_no_state_trainsition_report = False
+    mode_no_state_trainsition_report = False 
     mode_no_anomaly_detection = False 
-    mode_use_manual_anomaly_signal = False 
+    mode_use_manual_anomaly_signal = True 
     sm = None
     sys.exit(main())
 
