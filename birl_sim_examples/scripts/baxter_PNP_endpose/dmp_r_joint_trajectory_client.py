@@ -154,8 +154,8 @@ class Trajectory(object):
     def result(self):
         return self._client.get_result()
         
-#    def stop(self):
-#        self._client.cancel_goal()
+    def stop(self):
+        self._right_client.cancel_goal()
         
     def gripper_open(self):
         self._gripper.open()
@@ -272,42 +272,10 @@ class Trajectory(object):
             rospy.sleep(0.05)
         
 
-    def stop(self):
-        """
-        Preempts trajectory execution by sending cancel goals
-        """    
 
-        if (self._right_client.gh is not None and
-            self._right_client.get_state() == actionlib.GoalStatus.ACTIVE):
-            self._right_client.cancel_goal()
 
-        #delay to allow for terminating handshake
-        rospy.sleep(0.1)
-
-    def wait(self):
-        """
-        Waits for and verifies trajectory execution result
-        """
-        #create a timeout for our trajectory execution
-        #total time trajectory expected for trajectory execution plus a buffer
-        last_time = self._r_goal.trajectory.points[-1].time_from_start.to_sec()
-        time_buffer = rospy.get_param(self._param_ns + 'goal_time', 0.0) + 10
-        timeout = rospy.Duration(self._slow_move_offset +
-                                 last_time +
-                                 time_buffer)        
-        r_finish = self._right_client.wait_for_result(timeout)
-        
-        r_result = (self._right_client.get_result().error_code == 0)
-
-        #verify result
-        if all([r_finish,r_result]):
-            return True
-        else:
-            msg = ("Trajectory action failed or did not finish before "
-                   "timeout/interrupt.")
-            rospy.logwarn(msg)
-            return False
-
+    def wait(self, timeout=15.0):
+        return self._right_client.wait_for_result(timeout=rospy.Duration(timeout))
 
 def main():
     """RSDK Joint Trajectory Example: File Playback

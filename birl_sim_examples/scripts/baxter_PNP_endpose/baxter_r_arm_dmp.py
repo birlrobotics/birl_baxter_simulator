@@ -30,13 +30,6 @@ class Dmp(object):
         self.q_w0= data.command[4]
         self.q_w1= data.command[5]
         self.q_w2= data.command[6]
-        rospy.loginfo("q_s0 %s", data.command[0])
-        rospy.loginfo("q_s1 %s", data.command[1])
-        rospy.loginfo("q_e0 %s", data.command[2])
-        rospy.loginfo("q_e1 %s", data.command[3])
-        rospy.loginfo("q_w0 %s", data.command[4])
-        rospy.loginfo("q_w1 %s", data.command[5])
-        rospy.loginfo("q_w2 %s", data.command[6])
     
     def setpoint_callback(self,data):
         self.j_s0 = data.position[9]
@@ -63,15 +56,13 @@ class Dmp(object):
         k_gains = [K_gain]*dims
         d_gains = [D_gain]*dims
     
-        print "Starting LfD..."
         rospy.wait_for_service('learn_dmp_from_demo')
         try:
             lfd = rospy.ServiceProxy('learn_dmp_from_demo', LearnDMPFromDemo)
             resp = lfd(demotraj, k_gains, d_gains, num_bases)
         except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
-        print "LfD done"
-    
+            pass 
+
         return resp;
 
 
@@ -81,21 +72,18 @@ class Dmp(object):
             sad = rospy.ServiceProxy('set_active_dmp', SetActiveDMP)
             sad(dmp_list)
         except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
-
+            pass;
 
 #Generate a plan from a DMP
     def makePlanRequest(self,x_0, x_dot_0, t_0, goal, goal_thresh,
                         seg_length, tau, dt, integrate_iter):
-        print "Starting DMP planning..."
         rospy.wait_for_service('get_dmp_plan')
         try:
             gdp = rospy.ServiceProxy('get_dmp_plan', GetDMPPlan)
             resp = gdp(x_0, x_dot_0, t_0, goal, goal_thresh,
                        seg_length, tau, dt, integrate_iter)
         except rospy.ServiceException, e:
-            print "Service call failed: %s"%e
-        print "DMP planning done"
+            pass
     
         return resp;
 
@@ -144,10 +132,9 @@ def main(record_trajectory_path, generalized_dmp_trajectory_path, starting_angle
     
     t_0 = train_set.values[0,0] # better to choose the starting time in the record file
 
-    goal =[ joint0_data[-1],joint1_data[-1],
-    joint2_data[-1], joint3_data[-1],joint4_data[-1],joint5_data[-1], joint6_data[-1]         ]
+    goal =[ joint0_data[-1],joint1_data[-1], joint2_data[-1], joint3_data[-1],joint4_data[-1],joint5_data[-1], joint6_data[-1]         ]
     
-    goal_thresh = [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]   
+    goal_thresh = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]   
     
     seg_length = -1          #Plan until convergence to goal
     

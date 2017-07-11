@@ -67,7 +67,7 @@ def send_image(path):
 ## @return True if anomaly is detected.
 def wait_for_motion_and_detect_anomaly(traj_obj):
     # loop while the motion is not finished
-    while not traj.wait(0.00001):
+    while not traj_obj.wait(0.00001):
         # anomaly is detected
         if event_flag == 0:
             traj_obj.stop()
@@ -117,10 +117,11 @@ class Go_to_start_position(smach.State):
             config.generalized_go_to_start_position_path,
             current_angles) 
 
-        global dmp0_traj
+        dmp0_traj = dmp_r_joint_trajectory_client.Trajectory()
         dmp0_traj.parse_file(config.generalized_go_to_start_position_path)
         dmp0_traj.start()        
-        dmp0_traj.wait()
+        if wait_for_motion_and_detect_anomaly(dmp0_traj):
+            return 'NeedRecovery'    
 
         return 'Succeed'
         
@@ -137,7 +138,8 @@ class Go_to_gripper_position(smach.State):
         if not mode_no_state_trainsition_report:
             hmm_state_switch_client(self.state)
 
-        write_exec_hist(self, "Go_to_gripper_position", userdata, False)        
+        write_exec_hist(self, "Go_to_gripper_position", userdata, True)        
+        dmp1_traj = dmp_r_joint_trajectory_client.Trajectory()
         current_angles = [limb_interface.joint_angle(joint) for joint in limb_interface.joint_names()]
 
         baxter_r_arm_dmp.main(
@@ -145,10 +147,11 @@ class Go_to_gripper_position(smach.State):
             config.generalized_go_to_gripper_position_path,
             current_angles) 
 
-        global dmp1_traj
         dmp1_traj.parse_file(config.generalized_go_to_gripper_position_path)
         dmp1_traj.start()
-        dmp1_traj.wait()
+
+        if wait_for_motion_and_detect_anomaly(dmp1_traj):
+            return 'NeedRecovery'    
         dmp1_traj.gripper_close()
         return 'Succeed'
 
@@ -178,10 +181,11 @@ class Go_back(smach.State):
             config.generalized_go_back_path,
             current_angles) 
 
-        global dmp2_traj
+        dmp2_traj = dmp_r_joint_trajectory_client.Trajectory()
         dmp2_traj.parse_file(config.generalized_go_back_path)
         dmp2_traj.start()
-        dmp2_traj.wait()
+        if wait_for_motion_and_detect_anomaly(dmp2_traj):
+            return 'NeedRecovery'    
         dmp2_traj.gripper_open()
         return 'Succeed'
 
@@ -198,7 +202,7 @@ class Go_forward(smach.State):
         if not mode_no_state_trainsition_report:
             hmm_state_switch_client(self.state)
 
-        write_exec_hist(self, "Go_forward", userdata, False)        
+        write_exec_hist(self, "Go_forward", userdata, True)        
 
         current_angles = [limb_interface.joint_angle(joint) for joint in limb_interface.joint_names()]
 
@@ -207,10 +211,11 @@ class Go_forward(smach.State):
             config.generalized_go_forward_path,
             current_angles) 
 
-        global dmp3_traj
+        dmp3_traj = dmp_r_joint_trajectory_client.Trajectory()
         dmp3_traj.parse_file(config.generalized_go_forward_path)
         dmp3_traj.start()
-        dmp3_traj.wait()
+        if wait_for_motion_and_detect_anomaly(dmp3_traj):
+            return 'NeedRecovery'    
         return 'Succeed'
 
 
@@ -220,7 +225,7 @@ class Go_back_to_start_position(smach.State):
     def __init__(self):
         smach.State.__init__(self,
                              outcomes=['Succeed', 'NeedRecovery'])
-        self.state = 5 
+        self.state = 0
         
     def execute(self, userdata):
         global limb_interface
@@ -237,10 +242,10 @@ class Go_back_to_start_position(smach.State):
             config.generalized_go_back_to_start_position_path,
             current_angles) 
 
-        global dmp4_traj
+        dmp4_traj = dmp_r_joint_trajectory_client.Trajectory()
         dmp4_traj.parse_file(config.generalized_go_back_to_start_position_path)
         dmp4_traj.start()
-        dmp4_traj.wait()       
+        dmp4_traj.wait()
         return 'Succeed'
 
 
@@ -262,6 +267,7 @@ class Recovery(smach.State):
         event_flag = -1
 
         send_image(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'red.jpg'))
+
 
         history_to_reexecute = None 
         while True:
@@ -319,11 +325,6 @@ def main():
     global limb_interface
 
 
-    global dmp0_traj
-    global dmp1_traj
-    global dmp2_traj
-    global dmp3_traj
-    global dmp4_traj
 
 
     rospy.init_node("open_drawer_joint_trajectory")
@@ -344,11 +345,11 @@ def main():
     sm = smach.StateMachine(outcomes=['TaskFailed', 'TaskSucceed'])
 
     
-    dmp0_traj = dmp_r_joint_trajectory_client.Trajectory()
-    dmp1_traj = dmp_r_joint_trajectory_client.Trajectory()
-    dmp2_traj = dmp_r_joint_trajectory_client.Trajectory()
-    dmp3_traj = dmp_r_joint_trajectory_client.Trajectory()
-    dmp4_traj = dmp_r_joint_trajectory_client.Trajectory()
+
+
+
+
+
     with sm:
 
         smach.StateMachine.add(
