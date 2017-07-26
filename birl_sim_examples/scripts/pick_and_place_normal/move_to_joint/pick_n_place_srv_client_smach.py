@@ -34,7 +34,7 @@ class Go_to_Start_Position(smach.State):
         
     def execute(self, userdata):
         rospy.loginfo('executing Go to Start position...')
-        hmm_state_switch_client(self.state)
+        #hmm_state_switch_client(self.state)
         go_to_start_position_client()
         return 'Succeed'
         
@@ -96,7 +96,7 @@ class Go_to_Pick_Hover_Position(smach.State):
     def execute(self, userdata):
         self.pick_object_pose = copy.deepcopy(userdata.pick_object_pose)
         self.pick_object_pose.position.z = self.pick_object_pose.position.z + userdata.hover_distance
-        hmm_state_switch_client(self.state)
+        #hmm_state_switch_client(self.state)
         (ik_flag, action_flag) = go_to_position_client(pose = self.pick_object_pose)
         if not ik_flag:
             return 'IK_Fail'
@@ -119,7 +119,7 @@ class Pick_Object(smach.State):
         (ik_flag, action_flag) = go_to_position_client(pose = self.pick_object_pose)
         gripper_move_client(is_move_close = True)
         self.pick_object_pose.position.z =self.pick_object_pose.position.z+ userdata.hover_distance
-        hmm_state_switch_client(self.state)
+        #hmm_state_switch_client(self.state)
         (ik_flag, action_flag) = go_to_position_client(pose = self.pick_object_pose)
         if not ik_flag:
             return 'IK_Fail'
@@ -139,7 +139,7 @@ class Go_to_Place_Hover_Position(smach.State):
     def execute(self, userdata):
         self.place_object_pose = copy.deepcopy(userdata.place_object_pose)
         self.place_object_pose.position.z = self.place_object_pose.position.z + userdata.hover_distance
-        hmm_state_switch_client(self.state)
+        #hmm_state_switch_client(self.state)
         (ik_flag, action_flag) = go_to_position_client(pose = self.place_object_pose)
         if not ik_flag:
             return 'IK_Fail'
@@ -161,7 +161,7 @@ class Place_Object(smach.State):
         (ik_flag, action_flag) = go_to_position_client(pose = self.place_object_pose)
         gripper_move_client(is_move_close = False)
         self.place_object_pose.position.z =self.place_object_pose.position.z+ userdata.hover_distance
-        hmm_state_switch_client(self.state)
+        #hmm_state_switch_client(self.state)
         (ik_flag, action_flag) = go_to_position_client(pose = self.place_object_pose)        
         if not ik_flag:
             return 'IK_Fail'
@@ -187,7 +187,7 @@ def main():
     rospy.init_node("pick_n_place_client")
     rospy.on_shutdown(shutdown)
     #rospy.wait_for_message("/robot/sim/started", Empty)
-    ipdb.set_trace()
+    #ipdb.set_trace()
  
     sm = smach.StateMachine(outcomes=['Done'])
 

@@ -59,14 +59,16 @@ def main():
     global shared_joint_state
     global shared_wrench_stamped
 
+    Success_Info = True
     hmm_state = 0
 
     publishing_rate = 100
     
+    #ipdb.set_trace()
     rospy.init_node("topic_multimodal", anonymous=True)
     rospy.Subscriber("/robot/limb/right/endpoint_state", EndpointState, callback_endpoint_state)
     rospy.Subscriber("/robot/joint_states", JointState, callback_joint_state)
-    rospy.Subscriber("/robotiq_force_torque_wrench", WrenchStamped, callback_wrench_stamped)
+    rospy.Subscriber("/wrench/filtered/right", WrenchStamped, callback_wrench_stamped)
 
     pub = rospy.Publisher("/tag_multimodal",Tag_MultiModal, queue_size=10)
 
@@ -90,12 +92,30 @@ def main():
             tag_multimodal.endpoint_state = copy.deepcopy(shared_endpoint_state)
             tag_multimodal.joint_state = copy.deepcopy(shared_joint_state)
             tag_multimodal.wrench_stamped = copy.deepcopy(shared_wrench_stamped)
+            if Success_Info:
+                rospy.loginfo("Topics has been recieved and published successfully!")
+                Success_Info = False
             try:
                 pub.publish(tag_multimodal)
             except:
                 ipdb.set_trace()
+                rospy.loginfo("The node has expired, please check error!")
 
         r.sleep()
 
 if __name__ == '__main__':
     sys.exit(main())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
