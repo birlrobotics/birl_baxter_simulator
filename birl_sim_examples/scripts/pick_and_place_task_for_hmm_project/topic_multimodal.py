@@ -22,6 +22,10 @@ from birl_sim_examples.srv import (
     State_SwitchResponse
 )
 
+import rosbag
+
+
+
 shared_header = None
 shared_endpoint_state = None
 def callback_endpoint_state(endpoint_state):

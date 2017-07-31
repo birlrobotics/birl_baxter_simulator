@@ -20,10 +20,13 @@ import rospy
 import copy
 
 from arm_move.srv_client import *
+
+
 from arm_move import srv_action_client
 
 import smach
 import smach_ros
+import arm_move.pick_and_place
 
 import std_msgs.msg
 
@@ -54,6 +57,7 @@ event_flag = 1
 execution_history = []
 
 def send_image(path):
+
     """
     Send the image located at the specified path to the head
     display on Baxter.
@@ -146,6 +150,12 @@ class Go_to_Pick_Hover_Position(smach.State):
         global mode_no_state_trainsition_report
         if not mode_no_state_trainsition_report:
             hmm_state_switch_client(self.state)
+
+        pick_and_place.delete_gazebo_models()
+        pick_and_place.load_gazebo_models(model_name="box_female",
+                                          model_pose=Pose(position=Point(x=hardcoded_data.pick_object_pose.position.x, y=hardcoded_data.pick_object_pose.position.y,z=-0.115),
+                                                orientation=Quaternion(x=0,y=0,z=0,w=1)),
+                                          model_reference_frame="base")
         
         current_angles = [limb_interface.joint_angle(joint) for joint in limb_interface.joint_names()]
         hover_pick_object_pose = hardcoded_data.hover_pick_object_pose

@@ -17,14 +17,14 @@ starting_joint_angles = {
 }
 
 pick_object_pose = Pose()
-pick_object_pose.position.x = 0.783433342576
-pick_object_pose.position.y = -0.281027705287
-pick_object_pose.position.z = -0.0395903973417
+pick_object_pose.position.x = 0.6
+pick_object_pose.position.y = -0.4
+pick_object_pose.position.z = -0.12
 pick_object_pose.orientation = Quaternion(
-    x= -0.0634582357249,
-    y= 0.997906913323,
-    z= 0.0122551630271,
-    w= -0.00215769313191
+    x=0.0,
+    y=1.0,
+    z=0.0,
+    w=6.123233995736766e-17
 )
 
 place_object_pose = copy.deepcopy(pick_object_pose)
@@ -39,4 +39,6 @@ hover_pick_object_pose.position.z += hover_distance
 
 hover_place_object_pose = copy.deepcopy(place_object_pose)
 hover_place_object_pose.position.z += hover_distance
+
+bag_save_path = "/home/ben/ML_Data/Sim_PNP_7_31_B"
 
