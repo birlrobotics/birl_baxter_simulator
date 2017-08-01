@@ -506,7 +506,7 @@ def main():
 
 if __name__ == '__main__':
     mode_no_state_trainsition_report = False
-    mode_no_anomaly_detection = True
+    mode_no_anomaly_detection = False
     mode_use_manual_anomaly_signal = False 
     sm = None
     sys.exit(main())

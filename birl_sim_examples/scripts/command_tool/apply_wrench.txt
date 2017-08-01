@@ -1,0 +1,1 @@
+$ rosservice call gazebo/apply_body_wrench '{reference_frame: "baxter::base", body_name: "baxter::right_lower_elbow" , wrench: { force: { x: 50, y: 30, z: 0 } , torque: { x: 0.0, y: 0 , z: 0 } },  duration: 1000000000 }'

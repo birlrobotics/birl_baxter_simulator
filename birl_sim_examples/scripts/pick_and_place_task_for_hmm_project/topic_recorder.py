@@ -86,14 +86,12 @@ def main():
             print "Start to subscribe to topic /tag_multimodal"
             INFO_FLAG = False
         if IS_BAG_TO_CSV:
-            print "HI"
             #ipdb.set_trace()
             csv_index = bag_index -1
             dataframe = rosbag_pandas.bag_to_dataframe(os.path.join(hardcoded_data.bag_save_path, str(csv_index), 'tag_multimodal.bag'))
             df = dataframe[['tag_multimodal__endpoint_state_pose_position_x',
                            'tag_multimodal__endpoint_state_pose_position_y',
                            'tag_multimodal__endpoint_state_pose_position_z',
-                           'tag_multimodal__endpoint_state_pose_position_x',
                            'tag_multimodal__endpoint_state_pose_orientation_x',
                            'tag_multimodal__endpoint_state_pose_orientation_y',
                            'tag_multimodal__endpoint_state_pose_orientation_z',
@@ -105,8 +103,25 @@ def main():
                            'tag_multimodal__wrench_stamped_wrench_torque_y',
                            'tag_multimodal__wrench_stamped_wrench_torque_z',
                            'tag_multimodal__tag']]
+            df.columns = [  '.endpoint_state.pose.position.x',
+                            '.endpoint_state.pose.position.y',
+                            '.endpoint_state.pose.position.z',
+                            '.endpoint_state.pose.orientation.x',
+                            '.endpoint_state.pose.orientation.y',
+                            '.endpoint_state.pose.orientation.z',
+                            '.endpoint_state.pose.orientation.w',
+                            '.wrench_stamped.wrench.force.x',
+                            '.wrench_stamped.wrench.force.y',
+                            '.wrench_stamped.wrench.force.z',
+                            '.wrench_stamped.wrench.torque.x',
+                            '.wrench_stamped.wrench.torque.y',
+                            '.wrench_stamped.wrench.torque.z',
+                            '.tag'
+                          ]
 
-            df.to_csv(os.path.join(hardcoded_data.bag_save_path, str(csv_index), 'tag_multimodal.csv'))
+
+
+            df.to_csv(os.path.join(hardcoded_data.bag_save_path, str(csv_index), str(csv_index)+'-tag_multimodal.csv'))
             rospy.loginfo("csv transform finished !!")
             IS_BAG_TO_CSV = False
 

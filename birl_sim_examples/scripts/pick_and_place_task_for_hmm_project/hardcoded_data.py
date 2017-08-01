@@ -40,5 +40,5 @@ hover_pick_object_pose.position.z += hover_distance
 hover_place_object_pose = copy.deepcopy(place_object_pose)
 hover_place_object_pose.position.z += hover_distance
 
-bag_save_path = "/home/ben/ML_Data/Sim_PNP_7_31_B"
+bag_save_path = "/home/ben/ML_Data/Sim_Baxter_PNP_8_1/success"
 
