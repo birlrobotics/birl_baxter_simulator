@@ -31,7 +31,9 @@ add_service_files(
   Go_To_Start_Position.srv
   Go_To_Position.srv
   Gripper_Move.srv
-  State_Switch.srv)
+  State_Switch.srv
+  Traj_Move_Start_Pose.srv
+  Traj_Move_Pose.srv)
 
 catkin_python_setup()
 

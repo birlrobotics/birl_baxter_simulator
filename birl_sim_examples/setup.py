@@ -3,7 +3,7 @@ from distutils.core import setup
 from catkin_pkg.python_setup import generate_distutils_setup
 
 d = generate_distutils_setup()
-d['packages'] = ['arm_move','srv_client','srv_action_client','PID']
+d['packages'] = ['arm_move']
 d['package_dir'] = {'': 'src'}
 
 setup(**d)

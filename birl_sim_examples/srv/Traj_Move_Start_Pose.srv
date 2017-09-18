@@ -1,0 +1,9 @@
+# Start Flag
+std_msgs/Bool start
+
+# Seconds of process of Trajectory
+float64 time
+---
+
+# finish Flag
+std_msgs/Bool finish

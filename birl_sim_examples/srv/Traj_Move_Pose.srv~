@@ -1,0 +1,9 @@
+# Pose of the model
+geometry_msgs/Pose dest_pose
+
+# Seconds of process of Trajectory
+float64 time
+---
+
+# status of loading
+std_msgs/Bool load_status

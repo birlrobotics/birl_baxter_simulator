@@ -59,7 +59,7 @@ class Trajectory(object):
         self._goal = FollowJointTrajectoryGoal()
         self._goal_time_tolerance = rospy.Time(0.1)
         self._goal.goal_time_tolerance = self._goal_time_tolerance
-        
+
         ## check up if the joint_trajectory action server setup
         ## please rosrun baxter_interface joint_trajectory_server
         server_up = self._client.wait_for_server(timeout=rospy.Duration(10.0))
